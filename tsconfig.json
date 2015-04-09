@@ -18,7 +18,6 @@
         "./typings/atom-keymap/atom-keymap.d.ts",
         "./typings/atom-space-pen-views/atom-space-pen-views.d.ts",
         "./typings/atom/atom.d.ts",
-        "./typings/atom/atom.manual.d.ts",
         "./typings/event-kit/event-kit.d.ts",
         "./typings/first-mate/first-mate.d.ts",
         "./typings/jquery/jquery.d.ts",
@@ -29,7 +28,6 @@
         "./typings/semver/semver.d.ts",
         "./typings/serializable/serializable.d.ts",
         "./typings/space-pen/space-pen.d.ts",
-        "./typings/text-buffer/text-buffer.d.ts",
-        "./typings/tsd.d.ts"
+        "./typings/text-buffer/text-buffer.d.ts"
     ]
 }

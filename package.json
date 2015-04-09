@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "atomdoc": "^1.0.4",
-    "coffee-script": ">= 1.6.2",
+    "coffee-script": "^1.9.1",
     "donna": "^1.0.10",
     "lodash": "^3.6.0"
   }

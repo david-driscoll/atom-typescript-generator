@@ -2,10 +2,28 @@ require('coffee-script/register');
 var donna = require('donna');
 var atomdoc = require('atomdoc');
 import * as fs from 'fs'
+import {join} from 'path'
 import * as _ from 'lodash';
+import {execSync} from "child_process";
+var projectsToDocument = require('./projects.json').projects;
 
+_.each(projectsToDocument, project => {
+    if (fs.existsSync(`../${project}`)) {
+        // pull?
+        /*console.log(`Pulling ${project}...`)
+        execSync(`git pull`,  {
+            cwd: join(process.cwd(), `../${project}`),
+            stdio: 'inherit'
+        });*/
+    } else {
+        // clone
+        execSync(`git clone git@github.com:atom/${project}.git`, {
+            cwd: join(process.cwd(), "../"),
+            stdio: 'inherit'
+        });
+    }
+});
 
-var projectsToDocument = ['atom', 'event-kit', 'first-mate', 'atom-keymap', 'node-pathwatcher', 'text-buffer', 'atom-space-pen-views', 'space-pen', 'serializable'];
 var metadata = _.map(projectsToDocument, project => ({ project, metadata: donna.generateMetadata(['../' + project]) }));
 
 // config
@@ -91,6 +109,28 @@ _.each(metadata, (item) => {
         _.each(x.files, (fileMetadata, file) => {
             console.log(file);
 
+            var fileContent = fs.readFileSync(`../${item.project}/${file}`).toString('utf-8').split('\n');
+
+            function getCode(value) {
+                if (value.range) {
+                    var startLine = value.range[0][0];
+                    var startColumn = value.range[0][1];
+                    var endLine = value.range[1][0];
+                    var endColumn = value.range[0][1];
+
+                    var lines = [];
+
+                    lines.push(fileContent[startLine].substring(startColumn));
+                    for (var i = startLine + 1; i < endLine; i++) {
+                        lines.push(fileContent[i])
+                    }
+                    lines.push(fileContent[endLine].substr(0, endColumn));
+
+                    //console.log()
+
+                    return lines.join('\n');
+                }
+            }
 
             _.each(fileMetadata, (z, type) => {
                 console.log(type);
@@ -112,7 +152,9 @@ _.each(metadata, (item) => {
 
                     imports = imports.concat(<any>_(c).chain().filter((x: any) => x.type === 'import').map(z => {
                         var value: any = _.extend({}, z);
+                        value.code = getCode(value);
                         delete value.range;
+
                         value.project = project;
                         value.fromProject = project;
                         if (value.module) {
@@ -123,7 +165,8 @@ _.each(metadata, (item) => {
 
                     classes = classes.concat(<any>_(c).chain().filter((x: any) => x.type === "class").map(z => {
                         var value: any = _.extend({}, z);
-                        delete value.range;
+                        value.code = getCode(value);
+
                         value.project = project;
 
                         if (value.doc) {
@@ -138,6 +181,7 @@ _.each(metadata, (item) => {
                         value.classProperties = _.map(value.classProperties, (x: number[]) => {
                             //console.log(x, x[0], x[1]);
                             var copy: any = _.extend({}, objs[x[0]][x[1]]);
+                            copy.code = getCode(copy);
                             delete copy.range;
                             if (copy.doc) {
                                 copy.doc = atomdoc.parse(copy.doc)
@@ -147,12 +191,15 @@ _.each(metadata, (item) => {
                         value.prototypeProperties = _.map(value.prototypeProperties, (x: number[]) => {
                             //console.log(x, x[0], x[1]);
                             var copy: any = _.extend({}, objs[x[0]][x[1]]);
+                            copy.code = getCode(copy);
                             delete copy.range;
                             if (copy.doc) {
                                 copy.doc = atomdoc.parse(copy.doc)
                             }
                             return copy;
                         });
+
+                        delete value.range;
 
                         //console.log(value.classProperties);
 
@@ -196,18 +243,21 @@ function getType(cls: IClass, property: IProperty, type: string, project: string
             return inf[property.name];
         return 'any /* inferme */'
     }
+
+    if (_.startsWith(type, ':'))
+        return 'any'
     return type;
 }
 
 function getReturnType(argument: any, project: string) {
     if (argument.type === "Function")
-        return 'void';
+        return 'any';
     if (argument.type === "Array")
         return 'any[]'
     if (argument.type === "Boolean" || argument.type === "String" || argument.type === "Number") {
         return `${argument.type.toLowerCase() }[]`
     }
-    return getMappedType(project, argument.type) || 'void';
+    return getMappedType(project, argument.type) || 'any';
 }
 
 function getArgumentNamesWithTypes(argument: IDocArgument, project: string, docs: string[]) {
@@ -300,7 +350,7 @@ function getReturnValue(returnValues: IDocReturn[], project: string, docs: strin
     });
 
     if (!values.length) {
-        return 'void';
+        return 'any';
     }
 
     if (values.indexOf('any') > -1) {
@@ -311,8 +361,9 @@ function getReturnValue(returnValues: IDocReturn[], project: string, docs: strin
 }
 
 function getProperty(cls: IClass, property: IProperty) {
-    if (property.doc && (property.doc.visibility === "Private" || property.doc.visibility === "Section"))
-        return;
+    // There are some methods that are private that are useful elsewhere...
+    //if (property.doc && (property.doc.visibility === "Private" || property.doc.visibility === "Section"))
+    //    return;
 
     if (ignoreProperties[cls.name] && ignoreProperties[cls.name].indexOf(property.name) > -1)
         return;
@@ -327,19 +378,76 @@ function getProperty(cls: IClass, property: IProperty) {
     var propertyType = `: ${type}`;
     if (type === 'function') {
 
-        var signature = _.map(property.paramNames, (x, i) => {
-            var param = getParam(cls, property, (x || ('unknown' + i) /* takes a param but we don't know what */), i);
-            paramDocs.push(param.doc)
-            return param.result;
-        }).join(', ');
 
-        var returnValue = 'any';
-        var returnDocs = [];
-        if (property.doc && property.doc.returnValues && property.doc.returnValues.length) {
-            returnValue = getReturnValue(property.doc.returnValues, cls.project, returnDocs);
+
+        if (property.name === "constructor") {
+            var constr: any = property;
+
+            function consolidateParams(params: any[]) {
+                return _.map(params, (param, index) => {
+                    var n = param.name;
+                    if (param.name.match(/^\d/)) {
+                        n = ('unknown' + index);
+                    }
+
+                    var res = `${param.name}: `;
+
+                    if (param.children && param.children.length) {
+                        res += `{ ${consolidateParams(param.children).join('; ') } }`
+                    } else if (param.children) {
+                        res += 'Object';
+                    } else {
+                        var fakeProperty: IProperty = {
+                            paramNames: null,
+                            name: param.name,
+                            type: "primitive",
+                            bindingType: "",
+                            doc: null
+                        }
+
+                        var t = getType(cls, fakeProperty, fakeProperty.type, cls.project);
+                        if (_.startsWith(t, getProjectName(cls.project)) + '.') {
+                            t = t.substr(t.indexOf('.')+1);
+                        }
+
+                        if (t.indexOf('/') > -1)
+                            t = 'any'
+
+                        res += t;
+                    }
+
+                    return res;
+                });
+            }
+
+            var res: string;
+            var params = consolidateParams(constr.constructorParams);
+            console.log(params)
+            if (constr.constructorDesctructured) {
+                res = `{ ${params.join(', ') } }`;
+            } else {
+                res = params.join(', ')
+            }
+
+            var signature = res;
+            propertyType = `(${signature})`;
+        } else {
+
+            var signature = _.map(property.paramNames, (x, i) => {
+                var paramName = (x || ('unknown' + i));
+                var param = getParam(cls, property, (x || ('unknown' + i) /* takes a param but we don't know what */), i);
+                paramDocs.push(param.doc)
+                return param.result;
+            }).join(', ');
+
+            var returnValue = 'any';
+            var returnDocs = [];
+            if (property.doc && property.doc.returnValues && property.doc.returnValues.length) {
+                returnValue = getReturnValue(property.doc.returnValues, cls.project, returnDocs);
+            }
+            propertyType = `(${signature}): ${returnValue}`;
         }
 
-        propertyType = `(${signature}): ${returnValue}`;
     }
 
     var result = `    ${prefix}${property.name}${propertyType};`
@@ -347,6 +455,10 @@ function getProperty(cls: IClass, property: IProperty) {
         var doc = `     * ${property.doc.description.replace(/\n/g, '\n     * ') }`;
         if (paramDocs.length)
             doc += `\n     * \n${paramDocs.join('') }`
+    }
+
+    if (property.doc && (property.doc.visibility === "Private" || property.doc.visibility === "Section")) {
+        doc += '\n     * *** This property or method was marked private by atomdoc. Use with caution. ***';
     }
 
     if (returnDocs && returnDocs.length) {
@@ -393,11 +505,115 @@ function getClass(cls: IClass) {
 var getFileName = (name: string) => `_${name}.atomdoc.d.ts`.toLowerCase();
 var allFileNames = _.unique(_.map(classes, x => getFileName(x.name)));
 
+var desctructuredConstructor = /^\(\{(.*?)\}\)/;
+var normalConstructor = /^\((.*?)\)/;
+
+function parseParam(value: string) {
+    var makeParam = (name: string, isOptional: boolean, children?: any[]) => ({
+        "name": _.trim(name.replace("@", ""), '}'),
+        "bindingType": "prototypeProperty",
+        "type": "primitive",
+        "isProperty": _.startsWith(name, "@"),
+        "isOptional": isOptional,
+        "children": children
+    });
+
+    var result: any[] = [];
+
+    console.log(value);
+    value = value.trim();
+    while (value) {
+        console.log(value);
+        var comma = value.indexOf(',');
+
+        var name = '', optional = false, children: any[] = null;
+        if (value[0] === '{') {
+            var brace = value.indexOf('}');
+            var v = value.substr(1, brace);
+            var children = parseParam(v);
+
+            name = "options"
+            value = value.substr(brace + 1).trim();
+
+            if (value[0] === '=')
+                optional = true;
+        } else {
+            var v = comma > -1 ? value.substr(0, comma) : _.trim(value, '}');
+            var equals = v.indexOf('=');
+            name = v;
+            optional = equals > -1;
+            if (optional)
+                name = name.substr(0, equals)
+        }
+        var param = makeParam(name, optional, children);
+        result.push(param);
+
+        if (comma == -1) {
+            break;
+        }
+
+        value = value.substr(comma + 1).trim();
+    }
+
+    return result;
+}
+
+function resolveConstruors(properties: any[]): any[] {
+    var constr = _.find(properties, x => x.name === "constructor"); properties
+    if (constr) {
+        var desctructured = desctructuredConstructor.exec(constr.code);
+        var value: string;
+        if (desctructured) {
+            value = desctructured[1]//.split(',').map(z => z.trim());
+        } else {
+
+            var normal = normalConstructor.exec(constr.code);
+            if (normal) {
+                value = normal[1]//.split(',').map(z => z.trim());
+            }
+        }
+
+        if (value) {
+
+            var values = parseParam(value);
+
+            console.log('desctructured', !!desctructured);
+            console.log('normal', !!normal)
+
+            constr.constructorParams = values;
+            constr.constructorDesctructured = !!desctructured;
+
+            var processValues = (value) => {
+                if (value.children) {
+                    _.each(value.children.reverse(), processValues)
+                    value.children.reverse()
+                }
+
+                if (value.isProperty) {
+                    var v: any = _.extend({}, value);
+                    delete v.isProperty;
+                    delete v.isOptional;
+                    if (!_.any(properties, z => z.name == v.name))
+                        properties.unshift(v);
+                }
+            }
+
+            _.each(values.reverse(), processValues)
+            values.reverse()
+        }
+    }
+
+    return properties;
+}
+
 function splitClasses(cls: any): IClass[] {
     var result: IClass[] = [];
 
     if (cls.classProperties.length) {
-        var r = <any>_.extend({}, cls, { name: cls.name + 'Static', properties: cls.classProperties });
+
+        var properties = resolveConstruors(cls.classProperties);
+
+        var r = <any>_.extend({}, cls, { name: cls.name + 'Static', properties: properties });
         delete r.superClass;
         delete r.classProperties;
         delete r.prototypeProperties;
@@ -405,7 +621,10 @@ function splitClasses(cls: any): IClass[] {
     }
 
     if (cls.prototypeProperties) {
-        var r = <any>_.extend({}, cls, { properties: cls.prototypeProperties });
+
+        var properties = resolveConstruors(cls.prototypeProperties);
+
+        var r = <any>_.extend({}, cls, { properties: properties });
         delete r.classProperties;
         delete r.prototypeProperties;
         result.push(r);
@@ -426,12 +645,12 @@ var projectImports = _(imports)
 var projectMap: { [key: string]: string[] } = {};
 _.each(_.keys(projectImports), key => projectMap[key] = _(projectImports[key]).chain().map(z => z.fromProject).unique().difference([key]).filter(x => !!x).value())
 
-var projectTypeMap: { [key: string]: {[key:string] : string } } = {};
+var projectTypeMap: { [key: string]: { [key: string]: string } } = {};
 _.each(_.keys(projectImports), key => {
     var dict = projectTypeMap[key] = {};
     _.each(projectImports[key], x => dict[x.name] = `${getProjectName(x.fromProject) }.${x.name}`);
 });
-console.log(projectTypeMap)
+//console.log(projectTypeMap)
 
 function getProjectName(project: string) {
     if (_.startsWith(project, "node-")) {
@@ -489,10 +708,13 @@ function getMappedType(project: string, value: string) {
         result = 'NodeJS.EventEmitter'
     }
 
+    if (_.startsWith(value, ':') || _.startsWith(value, '/'))
+        return 'any'
+
     return result || value;
 }
 
-function getSuperType(project: string, className:string, superName:string) {
+function getSuperType(project: string, className: string, superName: string) {
     return projectTypeMap[_.kebabCase(superName)] && projectTypeMap[_.kebabCase(superName)][className] || getMappedType(project, superName);
 }
 
@@ -502,10 +724,10 @@ var results = _.map(classes, (cls: IClass) => {
     content = content.replace('deferredChangeEvents', '//deferredChangeEvents')
 
     if (cls.name === 'TextEditorView' && cls.project === 'atom')
-    content = content
-        .replace('scrollLeft', '//scrollLeft')
-        .replace('scrollTop', '//scrollTop')
-        .replace('remove', '//remove')
+        content = content
+            .replace('scrollLeft', '//scrollLeft')
+            .replace('scrollTop', '//scrollTop')
+            .replace('remove', '//remove')
     return { content, project: cls.project };
 });
 
@@ -520,7 +742,11 @@ _.each(_.groupBy(results, x => x.project), (contents, project) => {
 
 declare module ${projectName} {
 ${results.join('\n\n') }
-}`
+}\n\n`
+
+    if (fs.existsSync(`./helpers/${project}.d.ts`)) {
+        content += fs.readFileSync(`./helpers/${project}.d.ts`).toString('utf-8');
+    }
 
     if (!fs.existsSync(`./typings/${project}`))
         fs.mkdir(`./typings/${project}`);
