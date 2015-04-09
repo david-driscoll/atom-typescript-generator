@@ -1,0 +1,17 @@
+{
+  "name": "atom-typescript-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "atomdoc": "^1.0.4",
+    "coffee-script": ">= 1.6.2",
+    "donna": "^1.0.10",
+    "lodash": "^3.6.0"
+  }
+}
