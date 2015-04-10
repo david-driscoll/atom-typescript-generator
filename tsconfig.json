@@ -19,11 +19,11 @@
         "./inference.ts",
         "./interfaces.d.ts",
         "./metadata.ts",
+        "./tsd.d.ts",
         "./updateProjects.ts",
         "./inference/atom.ts",
         "./inference/default.ts",
         "./inference/event-kit.ts",
-        "./inference/properties.ts",
-        "./typings/tsd.d.ts"
+        "./inference/properties.ts"
     ]
 }

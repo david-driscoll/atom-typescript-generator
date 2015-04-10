@@ -1,4 +1,4 @@
-import {readFileSync} from 'fs'
+import {readFileSync, writeFileSync} from 'fs'
 var projectsToDocument = require('./projects.json').projects;
 var donna = require('donna');
 var atomdoc = require('atomdoc');
@@ -146,10 +146,10 @@ function load() {
 
         var result: any[] = [];
 
-        console.log(value);
+        //console.log(value);
         value = value.trim();
         while (value) {
-            console.log(value);
+            //console.log(value);
             var comma = value.indexOf(',');
 
             var name = '', optional = false, children: any[] = null;
@@ -185,8 +185,8 @@ function load() {
     }
 
 
-    function resolveConstruors(properties: any[]): any[] {
-        var functions = _.filter(properties, x => x.type === "function");
+    function resolveConstructors(properties: any[], constructorProtoProperties?: any[]): any[] {
+        var functions = _.filter(properties, x => x.type === "function" || x.name === "new");
         if (functions.length) {
             _.each(functions, func => {
                 var desctructured = desctructuredConstructor.exec(func.code);
@@ -204,13 +204,13 @@ function load() {
                 if (value) {
                     var values = parseParam(value);
 
-                    console.log('desctructured', !!desctructured);
-                    console.log('normal', !!normal)
+                    //console.log('desctructured', !!desctructured);
+                    //console.log('normal', !!normal)
 
                     func.params = values;
                     func.destructured = !!desctructured;
 
-                    if (func.name === "constructor") {
+                    if (func.name === "constructor" || func.name === "new") {
                         var processValues = (value) => {
                             if (value.children) {
                                 _.each(value.children.reverse(), processValues)
@@ -221,8 +221,12 @@ function load() {
                                 var v: any = _.extend({}, value);
                                 delete v.isProperty;
                                 delete v.isOptional;
-                                if (!_.any(properties, z => z.name == v.name))
+                                if (func.name === "new" && !_.any(constructorProtoProperties, z => z.name == v.name)) {
+                                    console.log(func, constructorProtoProperties)
+                                    constructorProtoProperties.unshift(v);
+                                } else if (!_.any(properties, z => z.name == v.name)) {
                                     properties.unshift(v);
+                                }
                             }
                         }
 
@@ -239,20 +243,39 @@ function load() {
     function splitClasses(cls: any): IClass[] {
         var result: IClass[] = [];
 
-        if (cls.classProperties.length) {
+        var hasStatic = !!(cls.classProperties && cls.classProperties.length);
+        var hasInstance = !!(cls.prototypeProperties && cls.prototypeProperties.length);
+        var instanceProperties = [];
 
-            var properties = resolveConstruors(cls.classProperties);
+        if (hasStatic) {
+            var staticName = cls.name + 'Static';
 
-            var r = <any>_.extend({}, cls, { name: cls.name + 'Static', properties: properties });
-            delete r.superClass;
+            if (hasInstance) {
+                var constr = _.find(cls.prototypeProperties, (x: any) => x.name === "constructor");
+                if (constr) {
+                    _.pull(cls.prototypeProperties, constr);
+                    cls.prototypeProperties.unshift(<IProperty>{
+                        name: 'constructor',
+                        type: staticName,
+                        bindingType: "primitive"
+                    });
+                    constr.name = 'new';
+                    cls.classProperties.unshift(constr);
+                }
+            }
+
+            var properties = resolveConstructors(cls.classProperties, hasInstance && instanceProperties);
+
+            var r = <any>_.extend({}, cls, { name: staticName, properties: properties });
+            if (r.superClass) r.superClass += 'Static'
             delete r.classProperties;
             delete r.prototypeProperties;
             result.push(r);
         }
 
-        if (cls.prototypeProperties) {
+        if (hasInstance) {
 
-            var properties = resolveConstruors(cls.prototypeProperties);
+            var properties = instanceProperties.concat(resolveConstructors(cls.prototypeProperties));
 
             var r = <any>_.extend({}, cls, { properties: properties });
             delete r.classProperties;
@@ -264,4 +287,7 @@ function load() {
     }
 
     _.each(_.flatten(_.map(classesTemp, splitClasses)), (x: IClass) => classes.push(x))
+
+
+    writeFileSync("./metadata.json", JSON.stringify({ classes: classes, imports: imports }, null, 4))
 }

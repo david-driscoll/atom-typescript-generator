@@ -1,1 +1,57 @@
-{"projects":["atom", "event-kit", "first-mate", "atom-keymap", "node-pathwatcher", "text-buffer", "atom-space-pen-views", "space-pen", "serializable", "status-bar"]}
+{
+    "projects": [
+        "atom",
+        "event-kit",
+        "first-mate",
+        "atom-keymap",
+        "node-pathwatcher",
+        "text-buffer",
+        "atom-space-pen-views",
+        "space-pen",
+        "serializable",
+        "status-bar",
+        "scoped-property-store",
+        "property-accessors",
+        "scandal"
+    ],
+    "references": [
+        "semver",
+        "q"
+    ],
+    "doNotTrack": [
+        "fs-plus",
+        "underscore-plus",
+        "grim",
+        "clear-cut",
+        "season",
+        "coffee-cash",
+        "async",
+        "nslog",
+        "optimist",
+        "coffeestack",
+        "oniguruma",
+        "pathwatcher",
+        "git-utils",
+        "emissary",
+        "less-cache",
+        "service-hub",
+        "delegato",
+        "scrollbar-style",
+        "stacktrace-parser",
+        "mixto",
+        "underscore",
+        "keyboard-layout",
+        "interval-skip-list",
+        "span-skip-list",
+        "atom-diff",
+        "mixto",
+        "get-parameter-names",
+        "key-path-helpers",
+        "atom-slick",
+        "isbinaryfile",
+        "underscore",
+        "split",
+        "minimatch",
+        "argparse"
+    ]
+}

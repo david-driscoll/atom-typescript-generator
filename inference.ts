@@ -74,10 +74,30 @@ inference.ignoreProperties.handler = (cls, property) => {
     return _.any(values, z => !!z);
 }
 
-inference.arguments.handler = (cls, property, argument, param) => _(inference.arguments).chain().map(z => z(cls, property, argument, param)).filter(z => !!z).first();
-inference.parameterTypes.handler = (cls, property, name) => _(inference.parameterTypes).chain().map(z => z(cls, property, name)).filter(z => !!z).first();
-inference.parameterNames.handler = (cls, property, name) => _(inference.parameterNames).chain().map(z => z(cls, property, name)).filter(z => !!z).first();
-inference.types.handler = (cls, property, type) => _(inference.types).chain().map(z => z(cls, property, type)).filter(z => !!z).first();
+inference.arguments.handler = (cls, property, argument, param) => {
+    return _(inference.arguments).chain().map(z => z(cls, property, argument, param)).filter(z => !!z).value()[0];
+};
+inference.parameterTypes.handler = (cls, property, name) => {
+    /*if (_.contains(name,'unknown')) {
+        console.log(cls, property, name);
+        process.exit();
+    }*/
+
+    return _(inference.parameterTypes).chain().map(z => z(cls, property, name)).filter(z => !!z).value()[0];
+};
+inference.parameterNames.handler = (cls, property, name) => {
+    /*if (_.contains(name,'unknown')) {
+        console.log(cls, property, name);
+        process.exit();
+    }*/
+    
+    return _(inference.parameterNames).chain().map(z => z(cls, property, name)).filter(z => !!z).value()[0];
+};
+inference.types.handler = (cls, property, type) => {
+    return _(inference.types).chain().map(z => z(cls, property, type)).filter(z => !!z).value()[0];
+};
+
+//console.log(inference.parameterNames.map(z => z.toString()))
 
 inference.arguments.push((cls, property, argument, param) => inference.parameterTypes.handler(cls, property, argument.name || (param && param.name)));
 

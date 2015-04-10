@@ -1,9 +1,14 @@
-import {existsSync} from 'fs'
+import {existsSync, unlinkSync} from 'fs'
 import {join} from 'path'
 import {execSync} from "child_process";
 
-var projectsToDocument: string[] = require('./projects.json').projects;
-projectsToDocument.forEach(project => {
+var projectsToDocument = require('./projects.json');
+
+export var projects : string[]  = projectsToDocument.projects;
+export var doNotTrack : string[] = projectsToDocument.doNotTrack;
+export var references : string[] = projectsToDocument.references;
+
+projectsToDocument.projects.forEach(project => {
     if (existsSync(`../${project}`)) {
         // pull?
         /*console.log(`Pulling ${project}...`)
@@ -17,5 +22,8 @@ projectsToDocument.forEach(project => {
             cwd: join(process.cwd(), "../"),
             stdio: 'inherit'
         });
+        if (existsSync('./metadata.json')) {
+            unlinkSync('./metadata.json');
+        }
     }
 });

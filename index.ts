@@ -2,11 +2,11 @@ require('coffee-script/register');
 import * as fs from 'fs'
 import * as _ from 'lodash';
 
-require('./updateProjects');
+import {projects, doNotTrack, references} from './updateProjects';
 import inference from './inference';
 
-var classes : IClass[] = [];
-var imports : IImport[] = [];
+var classes: IClass[] = [];
+var imports: IImport[] = [];
 import {getClasses, getImports} from './metadata';
 if (fs.existsSync('./metadata.json')) {
     var m = JSON.parse(fs.readFileSync('./metadata.json').toString('utf-8'));
@@ -17,22 +17,9 @@ if (fs.existsSync('./metadata.json')) {
     imports = getImports();
 }
 
-
-var definedClasses = [];
-
-
-
-
-var knownClasses: string[] = definedClasses.concat();
-
-
-
-//console.log(types);
-
-
-function getType(cls: IClass, property: IProperty, type: string, project: string) {
-    if (type === "function")
-        return type;
+function getType(cls: IClass, property: IProperty, paramName: string, type: string, project: string) {
+    var t = inference.parameterTypes.handler(cls, property, paramName);
+    if (t) return t;
 
     if (property.doc && property.doc.type)
         return getMappedType(project, property.doc.type);
@@ -52,9 +39,6 @@ function getType(cls: IClass, property: IProperty, type: string, project: string
                 return getMappedType(project, found.name);
         }
 
-        var inf = inference[cls.name];
-        if (inf && inf[property.name])
-            return inf[property.name];
         return 'any /* inferme */'
     }
 
@@ -141,7 +125,10 @@ function getParam(cls: IClass, property: IProperty, paramName: string, index: nu
         var argument = _.find(property.doc.arguments, z => z.name == paramName);
         if (argument) {
             docs = docs || [];
-            var result = `${argument.name}: ${getDocArgumentType(cls, property, argument, docs, cls.project) }`
+            var argName = inference.parameterNames.handler(cls, property, argument.name);
+
+            console.log('argName:', argName, argument.name);
+            var result = `${argName}: ${getDocArgumentType(cls, property, argument, docs, cls.project) }`
 
             return { result, doc: docs.join('\n') || '' };
         }
@@ -182,9 +169,9 @@ function getReturnValue(returnValues: IDocReturn[], project: string, docs: strin
 }
 
 function getConsolidateParamsString(cls: IClass, property: IProperty) {
-    var params = consolidateParams(cls, property.params);
+    var params = consolidateParams(cls, property, property.params);
 
-    console.log(params)
+    //console.log(params)
     if (property.destructured) {
         return `{ ${params.join(', ') } }`;
     } else {
@@ -192,20 +179,22 @@ function getConsolidateParamsString(cls: IClass, property: IProperty) {
     }
 }
 
-function consolidateParams(cls: IClass, params: any[]) {
-    return _.map(params, (param, index) => conslidateParam(cls, params, index));
+function consolidateParams(cls: IClass, property: IProperty, params: any[]) {
+    return _.map(params, (param, index) => conslidateParam(cls, property, params, index));
 }
 
-function conslidateParam(cls: IClass, param, index) {
+function conslidateParam(cls: IClass, property: IProperty, param, index) {
     var n = param.name;
     if (!n || n.match(/^\d/)) {
         n = ('unknown' + index);
     }
 
+    n = inference.parameterNames.handler(cls, property, n);
+
     var res = `${n}: `;
 
     if (param.children && param.children.length) {
-        res += `{ ${consolidateParams(cls, param.children).join('; ') } }`
+        res += `{ ${consolidateParams(cls, property, param.children).join('; ') } }`
     } else if (param.children) {
         res += 'Object';
     } else {
@@ -217,7 +206,7 @@ function conslidateParam(cls: IClass, param, index) {
             doc: null
         }
 
-        var t = getType(cls, fakeProperty, fakeProperty.type, cls.project);
+        var t = getType(cls, fakeProperty, fakeProperty.type, n, cls.project);
         if (_.startsWith(t, getProjectName(cls.project)) + '.') {
             t = t.substr(t.indexOf('.') + 1);
         }
@@ -238,15 +227,13 @@ function getProperty(cls: IClass, property: IProperty) {
     if (inference.ignoreProperties.handler(cls, property))
         return;
 
-    var type = getType(cls, property, property.type, cls.project);
 
     var prefix = '';
     //if (property.bindingType === "prototypeProperty" && ignorePrefix.indexOf(cls.name) === -1)
     //    prefix = 'static '
 
     var paramDocs = [];
-    var propertyType = `: ${type}`;
-    if (type === 'function') {
+    if (property.type === 'function') {
         if (!property.doc) {
 
             var res = getConsolidateParamsString(cls, property);
@@ -255,8 +242,8 @@ function getProperty(cls: IClass, property: IProperty) {
         } else {
 
             var signature = _.map(property.paramNames, (x, i) => {
-                var paramName = (x || ('unknown' + i));
-                var param = getParam(cls, property, (x || ('unknown' + i) /* takes a param but we don't know what */), i);
+                var paramName = (x || (property.params[i] && property.params[i].name) || ('unknown' + i) /* takes a param but we don't know what */);
+                var param = getParam(cls, property, paramName, i);
                 paramDocs.push(param.doc)
                 return param.result;
             }).join(', ');
@@ -274,6 +261,8 @@ function getProperty(cls: IClass, property: IProperty) {
         else
             propertyType = `(${signature}): ${returnValue}`;
     }
+    if (!propertyType)
+        var propertyType = `: any`;
 
     var result = `    ${prefix}${property.name}${propertyType};`
     if (property.doc) {
@@ -330,7 +319,7 @@ function getClass(cls: IClass) {
 var getFileName = (name: string) => `_${name}.atomdoc.d.ts`.toLowerCase();
 var allFileNames = _.unique(_.map(classes, x => getFileName(x.name)));
 
-knownClasses = knownClasses.concat(_.unique(classes.map(z => z.name)));
+var knownClasses = _.unique(classes.map(z => z.name));
 
 var projectImports = _(imports)
     .chain()
@@ -357,6 +346,14 @@ function getProjectName(project: string) {
         return "SemVerModule";
     }
     return _.capitalize(_.camelCase(project));
+}
+
+function getNodeName(project: string) {
+    if (_.startsWith(project, "node-")) {
+        project = project.replace("node-", "");
+    }
+
+    return project;
 }
 
 function getMappedType(project: string, value: string) {
@@ -435,23 +432,45 @@ _.each(_.groupBy(results, x => x.project), (contents, project) => {
     var results = _.map(contents, x => x.content);
     var projectName = getProjectName(project);
 
-    var references = _.difference(_(imports).filter(z => z.project === project).map(z => z.fromProject).unique().value(), [project])
-        .map(x => `/// <reference path="../${x}/${x}.d.ts" />`).join('\n');
+    var projectReferences = _.intersection(projectMap[project], references)
 
-    var content = `${references}
+    var notTracking = _.difference(projectMap[project], projects, doNotTrack, projectReferences).filter(z => !!z);
+    if (notTracking.length)
+        console.log(`${project} not tracking: ${notTracking}`);
+    var refs = _.unique(_.intersection(projectMap[project], projects).concat(projectReferences).filter(z => !!z))
+            .map(x => `/// <reference path="../${getNodeName(x) }/${getNodeName(x) }.d.ts" />`).join('\n');
 
+    if (fs.existsSync(`./helpers/${getNodeName(project) }.d.ts`)) {
+        var helper = fs.readFileSync(`./helpers/${getNodeName(project) }.d.ts`).toString('utf-8');
+
+        var projectPackage = require(`../${project}/package.json`);
+        helper = helper.replace("${version}", projectPackage.version).replace(/\$\{name\}/g, project);
+
+        if (_.contains(helper, '//${refs}')) {
+            helper = helper.replace('//${refs}', `${refs}
 declare module ${projectName} {
 ${results.join('\n\n') }
-}\n\n`
+}\n\n`);
+            refs = ''
 
-    if (fs.existsSync(`./helpers/${project}.d.ts`)) {
-        content += fs.readFileSync(`./helpers/${project}.d.ts`).toString('utf-8');
+            var content = helper
+        } else {
+            refs += '\n'
+        }
     }
 
-    if (!fs.existsSync(`./typings/${project}`))
-        fs.mkdir(`./typings/${project}`);
-    fs.writeFileSync("./metadata.json", JSON.stringify({ classes: classes, imports: imports }, null, 4))
-    fs.writeFileSync(`./typings/${project}/${project}.d.ts`, content);
+   if (!content) {
+    var content = `${refs}${helper || ''}
+        are module ${projectName} {
+            s.join('\n\n') }
+}\n\n`
+    }
+
+
+
+    if (!fs.existsSync(`./typings/${getNodeName(project) }`))
+        fs.mkdir(`./typings/${getNodeName(project) }`);
+    fs.writeFileSync(`./typings/${getNodeName(project)}/${getNodeName(project) }.d.ts`, content);
 
 });
     //throw 'abcd';
