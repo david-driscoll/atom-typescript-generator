@@ -1,9 +1,10 @@
 import {endsWith, sortBy} from 'lodash'
 import * as fs from 'fs'
 import * as _ from "lodash";
+import {BuilderProvider} from "./_builder";
 
 import defaults from './inference/default'
-var infer = {
+var inference: InferenceMain = <any> {
     ignoreProperties: [],
     arguments: [],
     parameterTypes: [],
@@ -14,92 +15,58 @@ var infer = {
 fs.readdirSync('./inference').forEach(file => {
     if (endsWith(file, '.ts'))
         return;
-    if (endsWith(file, 'default.js'))
-        return;
-    var inf: { default: Inference } = require(`./inference/${file}`);
+    var inf: { default: Function } = require(`./inference/${file}`);
 
+    var provider = new BuilderProvider(inference);
     if (inf && inf.default) {
-        if (inf.default.ignoreProperties) {
-            infer.ignoreProperties.push(...inf.default.ignoreProperties);
-        }
-        if (inf.default.arguments) {
-            infer.arguments.push(...inf.default.arguments);
-        }
-        if (inf.default.parameterTypes) {
-            infer.parameterTypes.push(...inf.default.parameterTypes);
-        }
-        if (inf.default.parameterNames) {
-            infer.parameterNames.push(...inf.default.parameterNames);
-        }
-        if (inf.default.types) {
-            infer.types.push(...inf.default.types);
-        }
+        inf.default(provider);
     }
 });
 
-infer.ignoreProperties = sortBy(infer.ignoreProperties, x => x.order === undefined ? 0 : x.order);
-infer.arguments = sortBy(infer.arguments, x => x.order === undefined ? 0 : x.order);
-infer.parameterTypes = sortBy(infer.parameterTypes, x => x.order === undefined ? 0 : x.order);
-infer.parameterNames = sortBy(infer.parameterNames, x => x.order === undefined ? 0 : x.order);
-infer.types = sortBy(infer.types, x => x.order === undefined ? 0 : x.order);
+inference.ignoreProperties = <any>sortBy(inference.ignoreProperties, x => x.order === undefined ? 0 : x.order);
+inference.arguments = <any>sortBy(inference.arguments, x => x.order === undefined ? 0 : x.order);
+inference.parameterTypes = <any>sortBy(inference.parameterTypes, x => x.order === undefined ? 0 : x.order);
+inference.parameterNames = <any>sortBy(inference.parameterNames, x => x.order === undefined ? 0 : x.order);
+inference.types = <any>sortBy(inference.types, x => x.order === undefined ? 0 : x.order);
 
-infer.ignoreProperties.reverse();
-if (defaults.ignoreProperties) {
-    infer.ignoreProperties = infer.ignoreProperties.concat(defaults.ignoreProperties);
-}
-
-infer.arguments.reverse();
-if (defaults.arguments) {
-    infer.arguments = infer.arguments.concat(defaults.arguments);
-}
-
-infer.parameterTypes.reverse();
-if (defaults.parameterTypes) {
-    infer.parameterTypes = infer.parameterTypes.concat(defaults.parameterTypes);
-}
-
-infer.parameterNames.reverse();
-if (defaults.parameterNames) {
-    infer.parameterNames = infer.parameterNames.concat(defaults.parameterNames);
-}
-
-infer.types.reverse();
-if (defaults.types) {
-    infer.types = infer.types.concat(defaults.types);
-}
-
-var inference: InferenceMain = <any>infer;
-inference.ignoreProperties.handler = (cls, property) => {
-    var values = _(inference.ignoreProperties).chain().map(z => z(cls, property)).value();
+//var inference: InferenceMain = <any>infer;
+inference.ignoreProperties.handler = function({cls, property}) {
+    //console.log('inference.ignoreProperties.handler', cls, property);
+    var values = _(inference.ignoreProperties).chain().map(z => z({ cls, property })).value();
     return _.any(values, z => !!z);
 }
 
-inference.arguments.handler = (cls, property, argument, param) => {
-    return _(inference.arguments).chain().map(z => z(cls, property, argument, param)).filter(z => !!z).value()[0];
+inference.arguments.handler = function({cls, property, argument, param}) {
+    //console.log('inference.arguments.handler', cls, property, argument, param);
+    return _(inference.arguments).chain().map(z => z({ cls, property, argument, param })).filter(z => !!z).value()[0];
 };
-inference.parameterTypes.handler = (cls, property, name) => {
+inference.parameterTypes.handler = function({cls, property, name, index}) {
+    //console.log('inference.parameterTypes.handler', cls, property, name);
     /*if (_.contains(name,'unknown')) {
-        console.log(cls, property, name);
+        //console.log(cls, property, name);
         process.exit();
     }*/
 
-    return _(inference.parameterTypes).chain().map(z => z(cls, property, name)).filter(z => !!z).value()[0];
+    return _(inference.parameterTypes).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
 };
-inference.parameterNames.handler = (cls, property, name) => {
+inference.parameterNames.handler = function({cls, property, name, index}) {
+    //console.log('inference.parameterTypes.handler', cls, property, name);
     /*if (_.contains(name,'unknown')) {
-        console.log(cls, property, name);
+        //console.log(cls, property, name);
         process.exit();
     }*/
-    
-    return _(inference.parameterNames).chain().map(z => z(cls, property, name)).filter(z => !!z).value()[0];
+    console.log(_(inference.parameterNames).chain().map(z => z({ cls, property, name, index })).value())
+    console.log(_(inference.parameterNames).chain().filter(z => !!z({ cls, property, name, index })).value()[0].toString())
+    return _(inference.parameterNames).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
 };
-inference.types.handler = (cls, property, type) => {
-    return _(inference.types).chain().map(z => z(cls, property, type)).filter(z => !!z).value()[0];
+inference.types.handler = function({cls, property, type}) {
+    //console.log('inference.types.handler', cls, property, type);
+    return _(inference.types).chain().map(z => z({ cls, property, type })).filter(z => !!z).value()[0];
 };
 
-//console.log(inference.parameterNames.map(z => z.toString()))
+////console.log(inference.parameterNames.map(z => z.toString()))
 
-inference.arguments.push((cls, property, argument, param) => inference.parameterTypes.handler(cls, property, argument.name || (param && param.name)));
+inference.arguments.push(function({cls, property, argument, param}) { return inference.parameterTypes.handler({ cls, property, name: argument.name || (param && param.name), index: _.indexOf(property.paramNames, argument.name || (param && param.name)) }) });
 
 
 export default inference;

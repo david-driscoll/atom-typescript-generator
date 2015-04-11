@@ -1,12 +1,19 @@
 import * as _ from "lodash";
+import {BuilderProvider} from "../_builder";
+export default function (provider: BuilderProvider) {
+    provider.ignore()
+        .forClass("Atom")
+        .forProperty(property => _.contains(["version", "updateLoadSetting", "workspaceViewParentSelector", "lastUncaughtError"], property.name))
+        .return(true)
 
-var ignoreAtomProperties : Inference.IgnoreProperty =
-    (cls:IClass, property:IProperty) => cls.project === "atom" && cls.name==="Atom" && _.contains(["version", "updateLoadSetting", "workspaceViewParentSelector", "lastUncaughtError"], property.name);
+    provider.type()
+        .forClass("AtomApplication")
+        .forProperty("windows")
+        .return("AtomWindow[]");
+};
 
-var atomType : Inference.TypeName = (cls, property, type) => cls.project === "atom" && cls.name === "AtomApplication" && property.name === "windows" && "AtomWindow[]";
+//var ignoreAtomProperties: Inference.IgnoreProperty = function({cls, property}) {
+//    return cls.project === "atom" && cls.name === "Atom" && _.contains(["version", "updateLoadSetting", "workspaceViewParentSelector", "lastUncaughtError"], property.name);
+//}
 
-var result : Inference = {
-    ignoreProperties: [ignoreAtomProperties],
-    types: [atomType]
-}
-export default result;
+//var atomType: Inference.TypeName = function({cls, property, type}) { return cls.project === "atom" && cls.name === "AtomApplication" && property.name === "windows" && "AtomWindow[]"; }

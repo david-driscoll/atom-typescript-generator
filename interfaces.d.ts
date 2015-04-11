@@ -70,43 +70,66 @@ declare module Inference {
 
     }
 
+    interface IgnorePropertyArguments {
+        cls: IClass;
+        property: IProperty;
+    }
+
+    interface TypeArguments extends IgnorePropertyArguments {
+        type: string;
+    }
+
+    interface ArgumentTypeArguments {
+        cls: IClass;
+        property: IProperty;
+        argument: IDocArgument;
+        param: { name: string };
+    }
+
+    interface ParameterArguments {
+        cls: IClass;
+        property: IProperty;
+        name: string;
+        index: number;
+    }
+
     interface IgnoreProperty extends Base {
-        (cls: IClass, property: IProperty): boolean;
+        ({cls, property}: IgnorePropertyArguments): boolean;
     }
 
     interface IgnorePropertyHandler extends Array<IgnoreProperty> {
-        handler: (cls: IClass, property: IProperty) => boolean;
+        handler({ cls, property } : IgnorePropertyArguments) : boolean;
     }
 
     interface ArgumentType extends Base {
-        (cls: IClass, property: IProperty, argument: IDocArgument, param: { name: string }): string;
+        ({cls, property, argument, param} : ArgumentTypeArguments): string;
     }
 
     interface ArgumentTypeHandler extends Array<ArgumentType> {
-        handler: (cls: IClass, property: IProperty, argument: IDocArgument, param: { name: string }) => string;
+        handler({cls, property, argument, param} : ArgumentTypeArguments) : string;
     }
 
     interface ParameterType extends Base {
-        (cls: IClass, property: IProperty, name: string): string;
+        ({cls, property, name, index} : ParameterArguments): string;
     }
 
     interface ParameterTypeHandler extends Array<ParameterType> {
-        handler: (cls: IClass, property: IProperty, name: string) => string;
+        handler({cls, property, name, index} : ParameterArguments) : string;
     }
 
     interface ParameterName extends Base {
-        (cls: IClass, property: IProperty, name: string): string;
+        ({cls, property, name, index} : ParameterArguments): string;
     }
 
     interface ParameterNameHandler extends Array<ParameterName> {
-        handler: (cls: IClass, property: IProperty, name: string) =>string;
+        handler({cls, property, name, index} : ParameterArguments) ; string;
     }
 
     interface TypeName extends Base {
-        (cls: IClass, property: IProperty, type: string): string;
+        ({cls, property, type} : TypeArguments): string;
     }
 
     interface TypeNameHandler extends Array<TypeName> {
-        handler: (cls: IClass, property: IProperty, type: string) => string;
+        handler({cls, property, type} : TypeArguments) : string;
     }
 }

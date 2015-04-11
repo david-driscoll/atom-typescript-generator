@@ -15,6 +15,7 @@
         "!./node_modules/**/*.ts"
     ],
     "files": [
+        "./_builder.ts",
         "./index.ts",
         "./inference.ts",
         "./interfaces.d.ts",
@@ -24,6 +25,7 @@
         "./inference/atom.ts",
         "./inference/default.ts",
         "./inference/event-kit.ts",
-        "./inference/properties.ts"
+        "./inference/properties.ts",
+        "./typings/tsd.d.ts"
     ]
 }

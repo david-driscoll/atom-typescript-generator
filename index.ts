@@ -18,7 +18,7 @@ if (fs.existsSync('./metadata.json')) {
 }
 
 function getType(cls: IClass, property: IProperty, paramName: string, type: string, project: string) {
-    var t = inference.parameterTypes.handler(cls, property, paramName);
+    var t = inference.parameterTypes.handler({cls, property, name: paramName, index: _.indexOf(property.paramNames, paramName)});
     if (t) return t;
 
     if (property.doc && property.doc.type)
@@ -89,7 +89,7 @@ function extractArrayType(object: any, project: string) {
 
 function getDocArgumentType(cls: IClass, property: IProperty, argument: IDocArgument, docs: string[], project: string, prefix: string = '') {
     var param: { name: string, isOptional: boolean } = _.find(property.params, x => x.name === argument.name);
-    var infer = inference.arguments.handler(cls, property, argument, param);
+    var infer = inference.arguments.handler({cls, property, argument, param});
 
     if (prefix) prefix += '.';
     var name = prefix + argument.name;
@@ -125,7 +125,7 @@ function getParam(cls: IClass, property: IProperty, paramName: string, index: nu
         var argument = _.find(property.doc.arguments, z => z.name == paramName);
         if (argument) {
             docs = docs || [];
-            var argName = inference.parameterNames.handler(cls, property, argument.name);
+            var argName = inference.parameterNames.handler({cls, property, name: argument.name, index});
 
             console.log('argName:', argName, argument.name);
             var result = `${argName}: ${getDocArgumentType(cls, property, argument, docs, cls.project) }`
@@ -134,8 +134,8 @@ function getParam(cls: IClass, property: IProperty, paramName: string, index: nu
         }
     }
 
-    var t = inference.parameterTypes.handler(cls, property, paramName) || 'any';
-    paramName = inference.parameterNames.handler(cls, property, paramName);
+    var t = inference.parameterTypes.handler({cls, property, name: paramName, index}) || 'any';
+    paramName = inference.parameterNames.handler({cls, property, name: paramName, index});
     return { result: paramName + ': ' + t, doc: '' };
 }
 
@@ -188,9 +188,8 @@ function conslidateParam(cls: IClass, property: IProperty, param, index) {
     if (!n || n.match(/^\d/)) {
         n = ('unknown' + index);
     }
-
-    n = inference.parameterNames.handler(cls, property, n);
-
+    console.log({name: n, index, a: property.paramNames[index]})
+    n = inference.parameterNames.handler({cls, property, name: n, index});
     var res = `${n}: `;
 
     if (param.children && param.children.length) {
@@ -224,7 +223,7 @@ function getProperty(cls: IClass, property: IProperty) {
     // There are some methods that are private that are useful elsewhere...
     //if (property.doc && (property.doc.visibility === "Private" || property.doc.visibility === "Section"))
     //    return;
-    if (inference.ignoreProperties.handler(cls, property))
+    if (inference.ignoreProperties.handler({cls, property}))
         return;
 
 
