@@ -20,10 +20,6 @@ if (fs.existsSync('./metadata.json')) {
 function getType(cls: IClass, property: IProperty, paramName: string, type: string, project: string) {
     var t = inference.parameterTypes.handler({cls, property, name: paramName, index: _.indexOf(property.paramNames, paramName)});
     if (t) {
-        if (t.indexOf("unknown") > -1) {
-            console.log('getType t', t)
-        }
-
         return t;
     }
 
@@ -43,7 +39,6 @@ function getType(cls: IClass, property: IProperty, paramName: string, type: stri
         if (property.name) {
             var found = _.find(classes, x => x.name.toLowerCase() == property.name.toLowerCase());
             if (found) {
-                console.log('found', found)
                 return getMappedType(project, found.name);
             }
         }
@@ -126,9 +121,6 @@ function getDocArgumentType(cls: IClass, property: IProperty, argument: IDocArgu
         type = getMappedType(project, argument.type);
     }
 
-    if ((infer && infer.indexOf("unknown") > -1) || type.indexOf("unknown") > -1)
-        console.log('infer', infer, 'type', type)
-
     if (infer) return infer;
     return type;
 }
@@ -140,7 +132,6 @@ function getParam(cls: IClass, property: IProperty, paramName: string, index: nu
             docs = docs || [];
             var argName = inference.parameterNames.handler({cls, property, name: argument.name, index});
 
-            //console.log('argName:', argName, argument.name);
             var result = `${argName}: ${getDocArgumentType(cls, property, argument, docs, cls.project) }`
 
             return { result, doc: docs.join('\n') || '' };
@@ -183,8 +174,6 @@ function getReturnValue(returnValues: IDocReturn[], project: string, docs: strin
 
 function getConsolidateParamsString(cls: IClass, property: IProperty) {
     var params = consolidateParams(cls, property, property.params);
-
-    //console.log(params)
     if (property.destructured) {
         return `{ ${params.join(', ') } }`;
     } else {
@@ -193,15 +182,16 @@ function getConsolidateParamsString(cls: IClass, property: IProperty) {
 }
 
 function consolidateParams(cls: IClass, property: IProperty, params: any[]) {
-    return _.map(params, (param, index) => conslidateParam(cls, property, params, index));
+    return _.map(params, (param, index) => conslidateParam(cls, property, param, index));
 }
 
 function conslidateParam(cls: IClass, property: IProperty, param, index) {
     var n = param.name;
+    if (cls.project === 'text-buffer')
+        console.log('getConsolidateParamsString', cls.name, property.name, param.name)
     if (!n || n.match(/^\d/)) {
         n = ('unknown' + index);
     }
-    //console.log({name: n, index, a: property.paramNames[index]})
     n = inference.parameterNames.handler({cls, property, name: n, index}) || n;
     var res = `${n}: `;
 
@@ -223,8 +213,9 @@ function conslidateParam(cls: IClass, property: IProperty, param, index) {
             t = t.substr(t.indexOf('.') + 1);
         }
 
-        if (t.indexOf('/') > -1)
+        if (t.indexOf('/') > -1) {
             t = 'any'
+        }
 
         res += t;
     }
@@ -326,7 +317,6 @@ function getClass(cls: IClass) {
 
     var result = `    ${doc}\ninterface ${cls.name}${superClass} {\n${properties.join('\n') }\n}`.split('\n').join('\n    ')
 
-    //console.log(result)
     return result;
 }
 
@@ -349,7 +339,6 @@ _.each(_.keys(projectImports), key => {
     var dict = projectTypeMap[key] = {};
     _.each(projectImports[key], x => dict[x.name] = `${getProjectName(x.fromProject) }.${x.name}`);
 });
-//console.log(projectTypeMap)
 
 function getProjectName(project: string) {
     if (_.startsWith(project, "node-")) {
