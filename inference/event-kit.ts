@@ -28,19 +28,20 @@ export default function (provider: BuilderProvider) {
         .forName("value")
         .return('any[]');
 
-    //provider.paramType().forClass("Disposable").forProperty("off").forName("eventName").compute(function({cls, property, name}) { return name; });
-    provider.paramType()
-        .order(1000)
-        .forName("disposed")
-        .return("boolean");
-
     provider.paramType()
         .order(1000)
         .forName("disposable")
         .return("EventKit.Disposable");
 
-    provider.paramName()
+//"add", "remove", "clear", "off", "emit"
+    provider.type()
         .order(1000)
-        .forName("disposed")
-        .return("disposed?");
+        .forPropertyName("dispose")
+        .return("void")
+
+    provider.type()
+        .order(1000)
+        .forProject("event-kit")
+        .forPropertyName(name => _.contains(["dispose", "add", "remove", "clear", "off", "emit"], name))
+        .return("void")
 }

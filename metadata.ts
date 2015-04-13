@@ -1,17 +1,40 @@
-import {readFileSync, writeFileSync} from 'fs'
+import {readFileSync, writeFileSync, existsSync} from 'fs'
 var projectsToDocument = require('./projects.json').projects;
 var donna = require('donna');
 var atomdoc = require('atomdoc');
 import * as _ from 'lodash'
-
+import ProjectConverted from "./converter/Project";
 
 var loaded = false;
-var classes: IClass[] = [];
-var imports: IImport[] = [];
+export var classes: IClass[] = [];
+export var imports: IImport[] = [];
 var types = [];
-export function getClasses() { if (!loaded) load(); return classes; }
-export function getImports() { if (!loaded) load(); return imports; };
-//export var types = [];
+
+export var projectImports = _(imports)
+    .chain()
+    .map(z => ({ project: z.project, name: z.name, fromProject: z.fromProject }))
+    .groupBy(z => z.project)
+    .value();
+
+export var projectMap: { [key: string]: string[] } = {};
+_.each(_.keys(projectImports), key => projectMap[key] = _(projectImports[key]).chain().map(z => z.fromProject).unique().difference([key]).filter(x => !!x).value())
+
+export var projectTypeMap: { [key: string]: { [key: string]: string } } = {};
+_.each(_.keys(projectImports), key => {
+    var dict = projectTypeMap[key] = {};
+    _.each(projectImports[key], x => dict[x.name] = `${ProjectConverted.getProjectDisplayName(x.fromProject) }.${x.name}`);
+});
+
+export var knownClasses = _.unique(classes.map(z => z.name));
+
+
+if (existsSync('./metadata.json')) {
+    var m = JSON.parse(readFileSync('./metadata.json').toString('utf-8'));
+    classes = m.classes;
+    imports = m.imports;
+} else {
+    load();
+}
 
 function load() {
     loaded = true;
@@ -24,7 +47,6 @@ function load() {
 
         _.each(metadata, (x: any, metaKey: string) => {
             _.each(x.files, (fileMetadata, file) => {
-                //console.log(file);
 
                 var fileContent = readFileSync(`../${item.project}/${file}`).toString('utf-8').split('\n');
 
@@ -43,8 +65,6 @@ function load() {
                         }
                         lines.push(fileContent[endLine].substr(0, endColumn));
 
-                        //console.log()
-
                         return lines.join('\n');
                     }
                 }
@@ -52,16 +72,8 @@ function load() {
                 _.each(fileMetadata, (z, type) => {
                     console.log(type);
 
-                    //if (type === "exports")
-                    //    console.log(z)
-
                     _.each(z, (c, ck) => {
 
-                        /*_(c).filter(x => x.type != "import")
-                          .each((v, k) => {
-                          //console.log(ck, k, v)
-                          classesTemp.push(_.extend({}, v));
-                      }).value()*/
                         types = _.unique(types.concat(_(c)
                             .chain()
                             .map((z: any) => z.type)
@@ -92,11 +104,7 @@ function load() {
 
                             var objs: any = (<any>fileMetadata).objects;
 
-                            //console.log(value.classProperties)
-                            //value.classProperties = _.map(value.classProperties, (x: number[]) => fileMetadata.objects[x[0]][x[1]]);
-                            //value.prototypeProperties = _.map(value.prototypeProperties, (x: number[]) => fileMetadata.objects[x[0]][x[1]]);
                             value.classProperties = _.map(value.classProperties, (x: number[]) => {
-                                //console.log(x, x[0], x[1]);
                                 var copy: any = _.extend({}, objs[x[0]][x[1]]);
                                 copy.code = getCode(copy);
                                 delete copy.range;
@@ -106,7 +114,6 @@ function load() {
                                 return copy;
                             });
                             value.prototypeProperties = _.map(value.prototypeProperties, (x: number[]) => {
-                                //console.log(x, x[0], x[1]);
                                 var copy: any = _.extend({}, objs[x[0]][x[1]]);
                                 copy.code = getCode(copy);
                                 delete copy.range;
@@ -117,8 +124,6 @@ function load() {
                             });
 
                             delete value.range;
-
-                            //console.log(value.classProperties);
 
                             return value;
                         }).value())
@@ -146,10 +151,8 @@ function load() {
 
         var result: any[] = [];
 
-        //console.log(value);
         value = value.trim();
         while (value) {
-            //console.log(value);
             var comma = value.indexOf(',');
 
             var name = '', optional = false, children: any[] = null;
@@ -204,9 +207,6 @@ function load() {
                 if (value) {
                     var values = parseParam(value);
 
-                    //console.log('desctructured', !!desctructured);
-                    //console.log('normal', !!normal)
-
                     func.params = values;
                     func.destructured = !!desctructured;
 
@@ -222,7 +222,6 @@ function load() {
                                 delete v.isProperty;
                                 delete v.isOptional;
                                 if (func.name === "new" && !_.any(constructorProtoProperties, z => z.name == v.name)) {
-                                //console.log(func, constructorProtoProperties)
                                     constructorProtoProperties.unshift(v);
                                 } else if (!_.any(properties, z => z.name == v.name)) {
                                     properties.unshift(v);
@@ -287,7 +286,6 @@ function load() {
     }
 
     _.each(_.flatten(_.map(classesTemp, splitClasses)), (x: IClass) => classes.push(x))
-
 
     writeFileSync("./metadata.json", JSON.stringify({ classes: classes, imports: imports }, null, 4))
 }

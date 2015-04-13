@@ -44,6 +44,47 @@ interface IImport {
     fromProject: string;
 }
 
+declare module Converted {
+    interface IProject {
+        name:string;
+        displayName: string;
+        classes: Converted.IClass[];
+    }
+
+    interface IClass {
+        name: string;
+        superClass: string;
+        docText: string;
+        fields: Converted.IField[];
+        methods: Converted.IMethod[];
+    }
+
+    interface IField {
+        name: string;
+        type: string;
+        docText: string;
+    }
+
+    interface IMethod {
+        name: string;
+        returnType: Converted.IReturnType;
+        docText: string;
+        parameters: Converted.IParameter[];
+        destructured: boolean;
+    }
+
+    interface IReturnType {
+        type: string;
+        docText: string;
+    }
+
+    interface IParameter {
+        name: string;
+        type: string;
+        docText: string;
+    }
+}
+
 
 interface Inference {
     ignoreProperties?: Inference.IgnoreProperty[];

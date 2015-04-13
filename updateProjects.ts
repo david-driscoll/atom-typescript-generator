@@ -15,7 +15,10 @@ projectsToDocument.projects.forEach(project => {
         execSync(`git pull`, {
             cwd: join(process.cwd(), `../${project}`),
             stdio: 'inherit'
-        });*/
+        });
+        if (existsSync('./metadata.json')) {
+            unlinkSync('./metadata.json');
+        }*/
     } else {
         // clone
         execSync(`git clone git@github.com:atom/${project}.git`, {

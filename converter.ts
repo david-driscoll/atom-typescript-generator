@@ -1,12 +1,61 @@
-require('coffee-script/register');
 import * as fs from 'fs'
 import * as _ from 'lodash';
 
 import {projects, doNotTrack, references} from './updateProjects';
 import inference from './inference';
+import ProjectConverted from './converter/Project';
 
-import {classes, imports, projectImports, projectMap, projectTypeMap} from './metadata';
+class Converter {
+    private _projects: Converted.IProject[];
 
+    constructor(private _inference: InferenceMain, classes: IClass[]) {
+        this._projects = this._extractProjects(classes);
+    }
+
+    private _extractProjects(classes: IClass[]) {
+        return _(classes).chain()
+            .groupBy(z => z.project)
+            .map((classes : IClass[], project) => new ProjectConverted(project, classes))
+            .value();
+    }
+
+    private _extractClass(cls: IClass) {
+        var properties = [];
+
+        var cb = property => {
+            var p = getProperty(cls, property);
+            if (p) {
+                if (p.doc) {
+                    properties.push(`    /**\n${p.doc}\n     */`);
+                }
+                properties.push(`${p.result}\n`);
+            }
+        };
+
+        _.each(cls.properties, cb);
+
+        var doc = '';
+        if (cls.doc) {
+            doc = ` * ${cls.doc.summary}\n` + doc;
+        }
+        if (doc) {
+            doc = `/**${doc}\n */`;
+        }
+
+        var superType = getSuperType(cls.project, cls.name, cls.superClass);
+        var superClass = superType && ' extends ' + superType || '';
+        //if (knownClasses.indexOf(superClass) === -1)
+        //superClass = `/* ${superClass} */`
+
+        var result = `    ${doc}\ninterface ${cls.name}${superClass} {\n${properties.join('\n') }\n}`.split('\n').join('\n    ')
+
+        return result;
+    }
+}
+
+var classes: IClass[] = [];
+var imports: IImport[] = [];
+import {getClasses, getImports} from './metadata';
 
 function getType(cls: IClass, property: IProperty, paramName: string, type: string) {
     var t = inference.parameterTypes.handler({cls, property, name: paramName, index: _.indexOf(property.paramNames, paramName)});
@@ -325,6 +374,23 @@ function getClass(cls: IClass) {
 
 var getFileName = (name: string) => `_${name}.atomdoc.d.ts`.toLowerCase();
 var allFileNames = _.unique(_.map(classes, x => getFileName(x.name)));
+
+var knownClasses = _.unique(classes.map(z => z.name));
+
+var projectImports = _(imports)
+    .chain()
+    .map(z => ({ project: z.project, name: z.name, fromProject: z.fromProject }))
+    .groupBy(z => z.project)
+    .value();
+
+var projectMap: { [key: string]: string[] } = {};
+_.each(_.keys(projectImports), key => projectMap[key] = _(projectImports[key]).chain().map(z => z.fromProject).unique().difference([key]).filter(x => !!x).value())
+
+var projectTypeMap: { [key: string]: { [key: string]: string } } = {};
+_.each(_.keys(projectImports), key => {
+    var dict = projectTypeMap[key] = {};
+    _.each(projectImports[key], x => dict[x.name] = `${getProjectName(x.fromProject) }.${x.name}`);
+});
 
 function getProjectName(project: string) {
     if (_.startsWith(project, "node-")) {

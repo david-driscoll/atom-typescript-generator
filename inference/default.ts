@@ -12,7 +12,7 @@ export default function (provider: BuilderProvider) {
 
     provider.type()
         .order(-1000)
-        .forPropertyName(name => _.endsWith(name.toLowerCase(), 'text'))
+        .forPropertyName(name => _.endsWith(name.toLowerCase(), 'text') || _.endsWith(name.toLowerCase(), 'text?'))
         .return("string");
 
     provider.type()
@@ -28,8 +28,6 @@ export default function (provider: BuilderProvider) {
     provider.paramName()
         .order(-1000)
         .compute(function({cls, property, name, index}) {
-            if (cls.project === "text-buffer")
-                console.log('default', name, property.paramNames)
             return ((property.paramNames && property.paramNames[index]) || name) + '?'
         });
 };
