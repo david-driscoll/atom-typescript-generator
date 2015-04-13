@@ -1,15 +1,17 @@
 import * as _ from "lodash";
 
 class Builder {
-    private predicates: ((arg: any) => any)[] = [];
+    public predicates: ((arg: any) => any)[] = [];
+    public values: any[] = [];
 
     private predicateFor(key: string, value: string | Function) {
-        console.log(key, value)
+        //console.log(key, value)
         if (typeof value === 'function') {
             this.predicates.push((obj) => _.has(obj, key) && value(obj[key]));
         } else {
             this.predicates.push((obj) => _.has(obj, key) && obj[key] === value);
         }
+        this.values.push(value);
     }
 
     //public forClass(value: (cls: IClass) => any): Builder;
@@ -20,15 +22,37 @@ class Builder {
 
     //public forClass(value: (cls: IClass) => any): Builder;
     public forProject(value: string|Function): Builder {
-        this.predicates.push((obj) => {
-            return _.has(obj, 'cls') && obj['cls'] && obj['cls']['project'] === value;
-        })
+        if (typeof value === 'function') {
+            this.predicates.push((obj) => _.has(obj, 'cls') && obj['cls'] && value(obj['cls']['project']));
+        } else {
+            this.predicates.push((obj) => {
+                return _.has(obj, 'cls') && obj['cls'] && obj['cls']['project'] === value;
+            })
+        }
         return this;
     }
 
     //public forProperty(value: (property: IProperty) => any): Builder;
     public forProperty(value: string|Function): Builder {
         this.predicateFor('property', value);
+        return this;
+    }
+
+    //public forProperty(value: (property: IProperty) => any): Builder;
+    public forPropertyName(value: string|Function): Builder {
+        if (typeof value === 'function') {
+            this.predicates.push((obj) => {
+                if (_.has(obj, 'property') && obj['property']) {
+                    return value(obj['property']['name'] || '');
+                }
+            });
+        } else {
+            this.predicates.push((obj) => {
+                if (_.has(obj, 'property') && obj['property']) {
+                    return obj['property']['name'] === value;
+                }
+            })
+        }
         return this;
     }
 
@@ -57,7 +81,7 @@ class Builder {
     }
 
     public return(result: any|Function) {
-        console.log(result);
+        //console.log(result);
         if (typeof result === 'function')
             return (obj) => {
                 //console.log(result(obj), this.predicates.map(z => z.toString()), _.all(this.predicates, (cb) => !!cb(obj)));
@@ -87,7 +111,9 @@ class ArgumentTypeBuilder {
         return this;
     }
 
-    public forProject(value: string): ArgumentTypeBuilder {
+    public forProject(value: (name: string) => any): ArgumentTypeBuilder;
+    public forProject(value: string): ArgumentTypeBuilder;
+    public forProject(value: any): ArgumentTypeBuilder {
         this.builder.forProject(value);
         return this;
     }
@@ -96,6 +122,13 @@ class ArgumentTypeBuilder {
     public forProperty(value: string|Function): ArgumentTypeBuilder
     public forProperty(value: any): ArgumentTypeBuilder {
         this.builder.forProperty(value);
+        return this;
+    }
+
+    public forPropertyName(value: (property: string) => any): ArgumentTypeBuilder;
+    public forPropertyName(value: string|Function): ArgumentTypeBuilder
+    public forPropertyName(value: any): ArgumentTypeBuilder {
+        this.builder.forPropertyName(value);
         return this;
     }
 
@@ -116,12 +149,14 @@ class ArgumentTypeBuilder {
     public compute(result: Inference.ArgumentType): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
     }
 
     public return(result?: any): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
     }
 
@@ -145,7 +180,9 @@ class ParameterBuilder {
         return this;
     }
 
-    public forProject(value: string): ParameterBuilder {
+    public forProject(value: (name: string) => any): ParameterBuilder;
+    public forProject(value: string): ParameterBuilder;
+    public forProject(value: any): ParameterBuilder {
         this.builder.forProject(value);
         return this;
     }
@@ -154,6 +191,13 @@ class ParameterBuilder {
     public forProperty(value: string|Function): ParameterBuilder
     public forProperty(value: any): ParameterBuilder {
         this.builder.forProperty(value);
+        return this;
+    }
+
+    public forPropertyName(value: (property: string) => any): ParameterBuilder;
+    public forPropertyName(value: string|Function): ParameterBuilder
+    public forPropertyName(value: any): ParameterBuilder {
+        this.builder.forPropertyName(value);
         return this;
     }
 
@@ -167,12 +211,14 @@ class ParameterBuilder {
     public compute(result: Inference.ParameterType): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
     }
 
     public return(result?: any): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
     }
 
@@ -185,7 +231,8 @@ class ParameterBuilder {
 
 class TypeBuilder {
     private builder = new Builder();
-    constructor(private handler: Inference.TypeNameHandler) {
+    private parameterTypeBuilder = new Builder();
+    constructor(private handler: Inference.TypeHandler, private parameterTypeHandler: Inference.ParameterTypeHandler) {
 
     }
 
@@ -193,11 +240,15 @@ class TypeBuilder {
     public forClass(value: string|Function): TypeBuilder
     public forClass(value: any): TypeBuilder {
         this.builder.forClass(value);
+        this.parameterTypeBuilder.forClass(value);
         return this;
     }
 
-    public forProject(value: string): TypeBuilder {
+    public forProject(value: (name: string) => any): TypeBuilder;
+    public forProject(value: string): TypeBuilder;
+    public forProject(value: any): TypeBuilder {
         this.builder.forProject(value);
+        this.parameterTypeBuilder.forProject(value);
         return this;
     }
 
@@ -205,6 +256,15 @@ class TypeBuilder {
     public forProperty(value: string|Function): TypeBuilder
     public forProperty(value: any): TypeBuilder {
         this.builder.forProperty(value);
+        this.parameterTypeBuilder.forProperty(value);
+        return this;
+    }
+
+    public forPropertyName(value: (property: string) => any): TypeBuilder;
+    public forPropertyName(value: string|Function): TypeBuilder
+    public forPropertyName(value: any): TypeBuilder {
+        this.builder.forPropertyName(value);
+        this.parameterTypeBuilder.forPropertyName(value);
         return this;
     }
 
@@ -212,19 +272,110 @@ class TypeBuilder {
     public forType(value: string|Function): TypeBuilder
     public forType(value: any): TypeBuilder {
         this.builder.forType(value);
+        this.parameterTypeBuilder.forType(value);
         return this;
     }
 
-    public compute(result: Inference.TypeName): any {
+    public compute(result: Inference.Type): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
+
+        var method: any = this.builder.return(result);
+        method.order = this._order;
+        method.predicates = this.builder.values;
+        this.parameterTypeHandler.push(method);
     }
 
     public return(result?: any): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
+
+        var method: any = this.parameterTypeBuilder.return(result);
+        method.order = this._order;
+        method.predicates = this.parameterTypeBuilder.values;
+        this.parameterTypeHandler.push(method);
+    }
+
+    private _order = 0;
+    public order(order: number) {
+        this._order = order;
+        return this;
+    }
+}
+
+class NameBuilder {
+    private builder = new Builder();
+    private parameterNameBuilder = new Builder();
+    constructor(private handler: Inference.NameHandler, private parameterNameHandler: Inference.ParameterNameHandler) {
+
+    }
+
+    public forClass(value: (cls: IClass) => any): NameBuilder;
+    public forClass(value: string|Function): NameBuilder
+    public forClass(value: any): NameBuilder {
+        this.builder.forClass(value);
+        this.parameterNameBuilder.forClass(value);
+        return this;
+    }
+
+    public forProject(value: (name: string) => any): NameBuilder;
+    public forProject(value: string): NameBuilder;
+    public forProject(value: any): NameBuilder {
+        this.builder.forProject(value);
+        this.parameterNameBuilder.forProject(value);
+        return this;
+    }
+
+    public forProperty(value: (property: IProperty) => any): NameBuilder;
+    public forProperty(value: string|Function): NameBuilder
+    public forProperty(value: any): NameBuilder {
+        this.builder.forProperty(value);
+        this.parameterNameBuilder.forProperty(value);
+        return this;
+    }
+
+    public forPropertyName(value: (property: string) => any): NameBuilder;
+    public forPropertyName(value: string|Function): NameBuilder
+    public forPropertyName(value: any): NameBuilder {
+        this.builder.forPropertyName(value);
+        this.parameterNameBuilder.forPropertyName(value);
+        return this;
+    }
+
+    public forType(value: (type: string) => any): NameBuilder;
+    public forType(value: string|Function): NameBuilder
+    public forType(value: any): NameBuilder {
+        this.builder.forType(value);
+        this.parameterNameBuilder.forType(value);
+        return this;
+    }
+
+    public compute(result: Inference.Name): any {
+        var method: any = this.builder.return(result);
+        method.order = this._order;
+        method.predicates = this.builder.values;
+        this.handler.push(method);
+
+        var method: any = this.builder.return(result);
+        method.order = this._order;
+        method.predicates = this.builder.values;
+        this.parameterNameHandler.push(method);
+    }
+
+    public return(result?: any): any {
+        var method: any = this.builder.return(result);
+        method.order = this._order;
+        method.predicates = this.builder.values;
+        this.handler.push(method);
+
+        var method: any = this.parameterNameBuilder.return(result);
+        method.order = this._order;
+        method.predicates = this.parameterNameBuilder.values;
+        this.parameterNameHandler.push(method);
     }
 
     private _order = 0;
@@ -247,7 +398,9 @@ class IgnorePropertyBuilder {
         return this;
     }
 
-    public forProject(value: string): IgnorePropertyBuilder {
+    public forProject(value: (name: string) => any): IgnorePropertyBuilder;
+    public forProject(value: string): IgnorePropertyBuilder;
+    public forProject(value: any): IgnorePropertyBuilder {
         this.builder.forProject(value);
         return this;
     }
@@ -262,12 +415,14 @@ class IgnorePropertyBuilder {
     public compute(result: Inference.IgnoreProperty): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
     }
 
     public return(result?: any): any {
         var method: any = this.builder.return(result);
         method.order = this._order;
+        method.predicates = this.builder.values;
         this.handler.push(method);
     }
 
@@ -284,15 +439,19 @@ export class BuilderProvider {
     }
 
     public type() {
-        return new TypeBuilder(this.inference.types);
-    }
-
-    public paramName() {
-        return new ParameterBuilder(this.inference.parameterNames);
+        return new TypeBuilder(this.inference.types, this.inference.parameterTypes);
     }
 
     public paramType() {
         return new ParameterBuilder(this.inference.parameterTypes);
+    }
+
+    public name() {
+        return new NameBuilder(this.inference.names, this.inference.parameterNames);
+    }
+
+    public paramName() {
+        return new ParameterBuilder(this.inference.parameterNames);
     }
 
     public ignore() {

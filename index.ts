@@ -19,10 +19,17 @@ if (fs.existsSync('./metadata.json')) {
 
 function getType(cls: IClass, property: IProperty, paramName: string, type: string, project: string) {
     var t = inference.parameterTypes.handler({cls, property, name: paramName, index: _.indexOf(property.paramNames, paramName)});
-    if (t) return t;
+    if (t) {
+        if (t.indexOf("unknown") > -1) {
+            console.log('getType t', t)
+        }
 
-    if (property.doc && property.doc.type)
+        return t;
+    }
+
+    if (property.doc && property.doc.type) {
         return getMappedType(project, property.doc.type);
+    }
 
     if (property.doc && property.doc.originalText) {
         var text = property.doc.originalText;
@@ -35,8 +42,10 @@ function getType(cls: IClass, property: IProperty, paramName: string, type: stri
     if (type === "primitive") {
         if (property.name) {
             var found = _.find(classes, x => x.name.toLowerCase() == property.name.toLowerCase());
-            if (found)
+            if (found) {
+                console.log('found', found)
                 return getMappedType(project, found.name);
+            }
         }
 
         return 'any /* inferme */'
@@ -44,6 +53,7 @@ function getType(cls: IClass, property: IProperty, paramName: string, type: stri
 
     if (_.startsWith(type, ':'))
         return 'any'
+
     return type;
 }
 
@@ -116,6 +126,9 @@ function getDocArgumentType(cls: IClass, property: IProperty, argument: IDocArgu
         type = getMappedType(project, argument.type);
     }
 
+    if ((infer && infer.indexOf("unknown") > -1) || type.indexOf("unknown") > -1)
+        console.log('infer', infer, 'type', type)
+
     if (infer) return infer;
     return type;
 }
@@ -127,7 +140,7 @@ function getParam(cls: IClass, property: IProperty, paramName: string, index: nu
             docs = docs || [];
             var argName = inference.parameterNames.handler({cls, property, name: argument.name, index});
 
-            console.log('argName:', argName, argument.name);
+            //console.log('argName:', argName, argument.name);
             var result = `${argName}: ${getDocArgumentType(cls, property, argument, docs, cls.project) }`
 
             return { result, doc: docs.join('\n') || '' };
@@ -135,8 +148,8 @@ function getParam(cls: IClass, property: IProperty, paramName: string, index: nu
     }
 
     var t = inference.parameterTypes.handler({cls, property, name: paramName, index}) || 'any';
-    paramName = inference.parameterNames.handler({cls, property, name: paramName, index});
-    return { result: paramName + ': ' + t, doc: '' };
+    var n = inference.parameterNames.handler({cls, property, name: paramName, index});
+    return { result: n + ': ' + t, doc: '' };
 }
 
 function getReturnValue(returnValues: IDocReturn[], project: string, docs: string[]) {
@@ -188,8 +201,8 @@ function conslidateParam(cls: IClass, property: IProperty, param, index) {
     if (!n || n.match(/^\d/)) {
         n = ('unknown' + index);
     }
-    console.log({name: n, index, a: property.paramNames[index]})
-    n = inference.parameterNames.handler({cls, property, name: n, index});
+    //console.log({name: n, index, a: property.paramNames[index]})
+    n = inference.parameterNames.handler({cls, property, name: n, index}) || n;
     var res = `${n}: `;
 
     if (param.children && param.children.length) {
@@ -199,13 +212,13 @@ function conslidateParam(cls: IClass, property: IProperty, param, index) {
     } else {
         var fakeProperty: IProperty = <any>{
             paramNames: null,
-            name: n,
+            name: '',
             type: "primitive",
             bindingType: "",
             doc: null
         }
 
-        var t = getType(cls, fakeProperty, fakeProperty.type, n, cls.project);
+        var t = getType(cls, fakeProperty, param.name, fakeProperty.type, cls.project);
         if (_.startsWith(t, getProjectName(cls.project)) + '.') {
             t = t.substr(t.indexOf('.') + 1);
         }
@@ -261,7 +274,9 @@ function getProperty(cls: IClass, property: IProperty) {
             propertyType = `(${signature}): ${returnValue}`;
     }
     if (!propertyType)
-        var propertyType = `: any`;
+    {
+        var propertyType = `: ${inference.types.handler({cls, property, type: property.type}) || 'any'}`;
+    }
 
     var result = `    ${prefix}${property.name}${propertyType};`
     if (property.doc) {
@@ -467,9 +482,11 @@ ${results.join('\n\n') }
 
 
 
-    if (!fs.existsSync(`./typings/${getNodeName(project) }`))
-        fs.mkdir(`./typings/${getNodeName(project) }`);
-    fs.writeFileSync(`./typings/${getNodeName(project)}/${getNodeName(project) }.d.ts`, content);
+    if (!fs.existsSync(`./generated/`))
+        fs.mkdirSync(`./generated/`);
+    if (!fs.existsSync(`./generated/${getNodeName(project)}/`))
+        fs.mkdirSync(`./generated/${getNodeName(project)}/`);
+    fs.writeFileSync(`./generated/${getNodeName(project)}/${getNodeName(project) }.d.ts`, content);
 
 });
     //throw 'abcd';

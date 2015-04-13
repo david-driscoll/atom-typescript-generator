@@ -5,19 +5,33 @@ export default function (provider: BuilderProvider) {
         .order(-1000)
         .return(false);
 
-    provider.paramType()
+    provider.type()
         .order(-1000)
-        .forName(name => _.contains(name.toLowerCase(), 'name'))
+        .forPropertyName(name => _.endsWith(name.toLowerCase(), 'name'))
         .return("string");
 
-    provider.paramType()
+    provider.type()
         .order(-1000)
-        .forName(name => (_.contains(name.toLowerCase(), 'column') || _.contains(name.toLowerCase(), 'row')))
+        .forPropertyName(name => _.endsWith(name.toLowerCase(), 'text'))
+        .return("string");
+
+    provider.type()
+        .order(-1000)
+        .forPropertyName(name => (name.toLowerCase() === 'column' || name.toLowerCase() === 'row'))
         .return('number');
 
+//    provider.name()
+//        .order(-1000)
+//        .compute(function({cls, property, name}) {
+//            return name + '?'
+//        });
     provider.paramName()
         .order(-1000)
-        .compute(function({cls, property, name, index}) { return ((property.paramNames && property.paramNames[index]) || name) + '?' });
+        .compute(function({cls, property, name, index}) {
+            if (cls.project === "text-buffer")
+                console.log('default', name, property.paramNames)
+            return ((property.paramNames && property.paramNames[index]) || name) + '?'
+        });
 };
 
 /*

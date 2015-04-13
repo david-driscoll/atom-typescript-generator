@@ -24,7 +24,7 @@ function load() {
 
         _.each(metadata, (x: any, metaKey: string) => {
             _.each(x.files, (fileMetadata, file) => {
-                console.log(file);
+                //console.log(file);
 
                 var fileContent = readFileSync(`../${item.project}/${file}`).toString('utf-8').split('\n');
 
@@ -222,7 +222,7 @@ function load() {
                                 delete v.isProperty;
                                 delete v.isOptional;
                                 if (func.name === "new" && !_.any(constructorProtoProperties, z => z.name == v.name)) {
-                                    console.log(func, constructorProtoProperties)
+                                //console.log(func, constructorProtoProperties)
                                     constructorProtoProperties.unshift(v);
                                 } else if (!_.any(properties, z => z.name == v.name)) {
                                     properties.unshift(v);

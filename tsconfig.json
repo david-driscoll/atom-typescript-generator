@@ -26,6 +26,7 @@
         "./inference/default.ts",
         "./inference/event-kit.ts",
         "./inference/properties.ts",
+        "./inference/text-buffer.ts",
         "./typings/tsd.d.ts"
     ]
 }

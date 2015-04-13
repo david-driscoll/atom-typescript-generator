@@ -48,17 +48,19 @@ interface IImport {
 interface Inference {
     ignoreProperties?: Inference.IgnoreProperty[];
     arguments?: Inference.ArgumentType[];
-    parameterTypes?: Inference.ParameterType[];
-    parameterNames?: Inference.ParameterName[];
-    types?: Inference.TypeName[];
+    types?: Inference.TypeHandler;
+    parameterTypes?: Inference.ParameterTypeHandler;
+    names?: Inference.TypeHandler;
+    parameterNames?: Inference.ParameterNameHandler;
 }
 
 interface InferenceMain {
     ignoreProperties?: Inference.IgnorePropertyHandler;
     arguments?: Inference.ArgumentTypeHandler;
+    types?: Inference.TypeHandler;
     parameterTypes?: Inference.ParameterTypeHandler;
+    names?: Inference.NameHandler;
     parameterNames?: Inference.ParameterNameHandler;
-    types?: Inference.TypeNameHandler;
 }
 
 declare module Inference {
@@ -77,6 +79,10 @@ declare module Inference {
 
     interface TypeArguments extends IgnorePropertyArguments {
         type: string;
+    }
+
+    interface NameArguments extends IgnorePropertyArguments {
+        name: string;
     }
 
     interface ArgumentTypeArguments {
@@ -125,11 +131,19 @@ declare module Inference {
         handler({cls, property, name, index} : ParameterArguments) ; string;
     }
 
-    interface TypeName extends Base {
+    interface Type extends Base {
         ({cls, property, type} : TypeArguments): string;
     }
 
-    interface TypeNameHandler extends Array<TypeName> {
+    interface TypeHandler extends Array<Type> {
         handler({cls, property, type} : TypeArguments) : string;
+    }
+
+    interface Name extends Base {
+        ({cls, property, name} : NameArguments): string;
+    }
+
+    interface NameHandler extends Array<Name> {
+        handler({cls, property, name} : NameArguments) : string;
     }
 }

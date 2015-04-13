@@ -23,11 +23,20 @@ fs.readdirSync('./inference').forEach(file => {
     }
 });
 
-inference.ignoreProperties = <any>sortBy(inference.ignoreProperties, x => x.order === undefined ? 0 : x.order);
-inference.arguments = <any>sortBy(inference.arguments, x => x.order === undefined ? 0 : x.order);
-inference.parameterTypes = <any>sortBy(inference.parameterTypes, x => x.order === undefined ? 0 : x.order);
-inference.parameterNames = <any>sortBy(inference.parameterNames, x => x.order === undefined ? 0 : x.order);
-inference.types = <any>sortBy(inference.types, x => x.order === undefined ? 0 : x.order);
+inference.ignoreProperties = <any>sortBy(inference.ignoreProperties, x => -(x.order));
+inference.arguments = <any>sortBy(inference.arguments, x => -(x.order));
+inference.types = <any>sortBy(inference.types, x => -(x.order));
+inference.parameterTypes = <any>sortBy(inference.parameterTypes, x => -(x.order));
+inference.names = <any>sortBy(inference.names, x => -(x.order));
+inference.parameterNames = <any>sortBy(inference.parameterNames, x => -(x.order));
+
+console.log('ignoreProperties', inference.ignoreProperties.map((z:any) => z.predicates.map(x => x.toString())));
+console.log('arguments', inference.arguments.map((z:any) => z.predicates.map(x => x.toString())));
+console.log('types', inference.types.map((z:any) => z.predicates.map(x => x.toString())));
+console.log('parameterTypes', inference.parameterTypes.map((z:any) => z.predicates.map(x => x.toString())));
+console.log('names', inference.names.map((z:any) => z.predicates.map(x => x.toString())));
+console.log('parameterNames', inference.parameterNames.map((z:any) => z.predicates.map(x => x.toString())));
+
 
 //var inference: InferenceMain = <any>infer;
 inference.ignoreProperties.handler = function({cls, property}) {
@@ -40,24 +49,14 @@ inference.arguments.handler = function({cls, property, argument, param}) {
     //console.log('inference.arguments.handler', cls, property, argument, param);
     return _(inference.arguments).chain().map(z => z({ cls, property, argument, param })).filter(z => !!z).value()[0];
 };
-inference.parameterTypes.handler = function({cls, property, name, index}) {
-    //console.log('inference.parameterTypes.handler', cls, property, name);
-    /*if (_.contains(name,'unknown')) {
-        //console.log(cls, property, name);
-        process.exit();
-    }*/
 
-    return _(inference.parameterTypes).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
+inference.parameterTypes.handler = function({cls, property, name, index}) {
+    var result = _(inference.parameterTypes).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
+    return result;
 };
 inference.parameterNames.handler = function({cls, property, name, index}) {
-    //console.log('inference.parameterTypes.handler', cls, property, name);
-    /*if (_.contains(name,'unknown')) {
-        //console.log(cls, property, name);
-        process.exit();
-    }*/
-    console.log(_(inference.parameterNames).chain().map(z => z({ cls, property, name, index })).value())
-    console.log(_(inference.parameterNames).chain().filter(z => !!z({ cls, property, name, index })).value()[0].toString())
-    return _(inference.parameterNames).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
+    var result = _(inference.parameterNames).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
+    return result;
 };
 inference.types.handler = function({cls, property, type}) {
     //console.log('inference.types.handler', cls, property, type);
@@ -66,7 +65,16 @@ inference.types.handler = function({cls, property, type}) {
 
 ////console.log(inference.parameterNames.map(z => z.toString()))
 
-inference.arguments.push(function({cls, property, argument, param}) { return inference.parameterTypes.handler({ cls, property, name: argument.name || (param && param.name), index: _.indexOf(property.paramNames, argument.name || (param && param.name)) }) });
-
+inference.arguments.push(function({cls, property, argument, param}) {
+    var result = inference.parameterTypes.handler({
+        cls,
+        property,
+        name: argument.name || (param && param.name),
+        index: _.indexOf(property.paramNames, argument.name || (param && param.name))
+    });
+    if (cls.project === "text-buffer")
+        console.log('arguments', argument.name || (param && param.name), result)
+    return result;
+});
 
 export default inference;
