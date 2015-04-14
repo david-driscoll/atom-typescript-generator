@@ -67,7 +67,7 @@ declare module Converted {
 
     interface IMethod {
         name: string;
-        returnType: Converted.IReturnType;
+        returnType: Converted.IReturnType[];
         docText: string;
         parameters: Converted.IParameter[];
         destructured: boolean;

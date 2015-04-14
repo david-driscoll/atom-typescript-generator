@@ -17,6 +17,7 @@
     "files": [
         "./_builder.ts",
         "./converter.ts",
+        "./extractArrayType.ts",
         "./getMappedType.ts",
         "./index.ts",
         "./inference.ts",

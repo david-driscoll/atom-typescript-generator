@@ -8,14 +8,18 @@ import inference from "../inference";
 class MethodConverted implements Converted.IMethod {
     public name: string;
     public docText: string;
-    public returnType: Converted.IReturnType;
+    public returnType: Converted.IReturnType[];
     public parameters: Converted.IParameter[];
     public destructured: boolean;
 
     constructor(cls: IClass, property: IProperty) {
         this.name = property.name;
         this.docText = Field.getDocText(property);
-        this.returnType = new ReturnTypeConverted(cls, property);
+        if (property.doc && property.doc.returnValues) {
+            this.returnType = _.map(property.doc.returnValues, z=> new DocReturnTypeConverted(cls, property, z));
+        } else {
+            this.returnType = []
+        }
         this.destructured = property.destructured;
         this.parameters = this._getParameters(cls, property);
     }
@@ -36,6 +40,41 @@ class MethodConverted implements Converted.IMethod {
     }
 }
 
+export class DocReturnTypeConverted implements Converted.IReturnType {
+    public type: string;
+    public docText: string;
+    constructor(cls: IClass, property: IProperty, returnValue:IDocReturn) {
+        this.type = this._getReturnValue(cls, property);
+    }
+
+    public _getReturnValue(cls: IClass, property: IProperty, returnValue:IDocReturn) {
+        this.docText = returnValue.description;
+        if (returnValue.type === null)
+            return 'any';
+
+        if (returnValue.type === "Function") {
+            var returnType = getReturnType(cls, property, returnValue);
+            return `() => ${returnType}`
+        } else if (returnValue.type == 'Array') {
+            return this._extractArrayType(cls, returnValue);
+        } else if (returnValue.type === "Boolean" || returnValue.type === "String" || returnValue.type === "Number") {
+            return returnValue.type.toLowerCase();
+        } else if (returnValue.type) {
+            return getMappedType(cls, returnValue.type);
+        }
+
+        if (!values.length) {
+            return 'any';
+        }
+
+        if (values.indexOf('any') > -1) {
+            return 'any';
+        }
+
+        return values.join(' | ');
+    }
+}
+
 export class ReturnTypeConverted implements Converted.IReturnType {
     public type: string;
     public docText: string;
@@ -43,7 +82,13 @@ export class ReturnTypeConverted implements Converted.IReturnType {
         this.type = this._getReturnValue(cls, property);
     }
 
-    public _getReturnValue(cls: IClass, property: IProperty, returnValues: IDocReturn[]) {
+    public _getReturnValue(cls: IClass, property: IProperty) {
+        if (property.doc && property.doc.returnValues) {
+            _.each(property.doc.returnValues, returnValue => {
+                this.docText.push(returnValue.description);
+            });
+        }
+
         var values = _.map(returnValues, returnValue => {
             docs.push(`${returnValue.type || 'any'} - ${returnValue.description}`)
             if (returnValue.type === null)
