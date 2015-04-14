@@ -30,12 +30,12 @@ inference.parameterTypes = <any>sortBy(inference.parameterTypes, x => -(x.order)
 inference.names = <any>sortBy(inference.names, x => -(x.order));
 inference.parameterNames = <any>sortBy(inference.parameterNames, x => -(x.order));
 
-console.log('ignoreProperties', inference.ignoreProperties.map((z:any) => z.predicates));
-console.log('arguments', inference.arguments.map((z:any) => z.predicates));
-console.log('types', inference.types.map((z:any) => z.predicates));
-console.log('parameterTypes', inference.parameterTypes.map((z:any) => z.predicates));
-console.log('names', inference.names.map((z:any) => z.predicates));
-console.log('parameterNames', inference.parameterNames.map((z:any) => z.predicates));
+//console.log('ignoreProperties', inference.ignoreProperties.map((z:any) => z.predicates));
+//console.log('arguments', inference.arguments.map((z:any) => z.predicates));
+//console.log('types', inference.types.map((z:any) => z.predicates));
+//console.log('parameterTypes', inference.parameterTypes.map((z:any) => z.predicates));
+//console.log('names', inference.names.map((z:any) => z.predicates));
+//console.log('parameterNames', inference.parameterNames.map((z:any) => z.predicates));
 
 
 //var inference: InferenceMain = <any>infer;

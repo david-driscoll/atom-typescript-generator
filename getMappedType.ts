@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import {projectTypeMap} from "./metadata";
 
 export default function getMappedType(cls:IClass, value: string) {

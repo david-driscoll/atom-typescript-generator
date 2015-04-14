@@ -5,29 +5,11 @@ var atomdoc = require('atomdoc');
 import * as _ from 'lodash'
 import ProjectConverted from "./converter/Project";
 
-var loaded = false;
 export var classes: IClass[] = [];
 export var imports: IImport[] = [];
+
+var loaded = false;
 var types = [];
-
-export var projectImports = _(imports)
-    .chain()
-    .map(z => ({ project: z.project, name: z.name, fromProject: z.fromProject }))
-    .groupBy(z => z.project)
-    .value();
-
-export var projectMap: { [key: string]: string[] } = {};
-_.each(_.keys(projectImports), key => projectMap[key] = _(projectImports[key]).chain().map(z => z.fromProject).unique().difference([key]).filter(x => !!x).value())
-
-export var projectTypeMap: { [key: string]: { [key: string]: string } } = {};
-_.each(_.keys(projectImports), key => {
-    var dict = projectTypeMap[key] = {};
-    _.each(projectImports[key], x => dict[x.name] = `${ProjectConverted.getProjectDisplayName(x.fromProject) }.${x.name}`);
-});
-
-export var knownClasses = _.unique(classes.map(z => z.name));
-
-
 if (existsSync('./metadata.json')) {
     var m = JSON.parse(readFileSync('./metadata.json').toString('utf-8'));
     classes = m.classes;
@@ -35,6 +17,23 @@ if (existsSync('./metadata.json')) {
 } else {
     load();
 }
+
+export var projectImports : _.Dictionary<{ project:string;name: string; fromProject: string; }[]> = _(imports)
+    .chain()
+    .map(z => ({ project: z.project, name: z.name, fromProject: z.fromProject }))
+    .groupBy(z => z.project)
+    .value();
+
+export var projectMap: { [key: string]: string[] } = {};
+export var projectTypeMap: { [key: string]: { [key: string]: string } } = {};
+export var knownClasses: string[] = [];
+
+_.each(_.keys(projectImports), key => projectMap[key] = _(projectImports[key]).chain().map(z => z.fromProject).unique().difference([key]).filter(x => !!x).value());
+_.each(_.keys(projectImports), key => {
+    var dict = projectTypeMap[key] = {};
+    _.each(projectImports[key], x => dict[x.name] = `${ProjectConverted.getProjectDisplayName(x.fromProject) }.${x.name}`);
+});
+knownClasses.push(... _.unique(classes.map(z => z.name)))
 
 function load() {
     loaded = true;
@@ -79,7 +78,7 @@ function load() {
                             .map((z: any) => z.type)
                             .value()));
 
-                        imports = imports.concat(<any>_(c).chain().filter((x: any) => x.type === 'import').map(z => {
+                        imports.push(... <any[]>_(c).chain().filter((x: any) => x.type === 'import').map(z => {
                             var value: any = _.extend({}, z);
                             value.code = getCode(value);
                             delete value.range;
@@ -92,7 +91,7 @@ function load() {
                             return value;
                         }).value());
 
-                        classesTemp = classesTemp.concat(<any>_(c).chain().filter((x: any) => x.type === "class").map(z => {
+                        classesTemp.push(... <any[]>_(c).chain().filter((x: any) => x.type === "class").map(z => {
                             var value: any = _.extend({}, z);
                             value.code = getCode(value);
 

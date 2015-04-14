@@ -4,7 +4,7 @@ export default function (provider: BuilderProvider) {
     provider.ignore()
         .forClass("Atom")
         .forProperty(property => _.contains(["version", "updateLoadSetting", "workspaceViewParentSelector", "lastUncaughtError"], property.name))
-        .return(true)
+        .return(true);
 
     provider.type()
         .forClass("AtomApplication")

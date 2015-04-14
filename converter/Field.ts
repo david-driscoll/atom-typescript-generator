@@ -36,6 +36,20 @@ class FieldConverted implements Converted.IField {
             return property.type;
         return 'any /* default */'
     }
+
+    public emit({indent}: { indent: number }) {
+        var lines = [];
+
+        var docLines = this.docText.split('\n');
+        lines.push('/**');
+        _.each(docLines, x => lines.push(` * ${x}`));
+        lines.push(' */');
+
+        var field = `${this.name}: ${this.type};`;
+        lines.push(field);
+
+        return lines.map(z => _.repeat(' ', indent) + z).join('\n');
+    }
 }
 
 export default FieldConverted;

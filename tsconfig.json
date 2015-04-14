@@ -19,6 +19,7 @@
         "./converter.ts",
         "./extractArrayType.ts",
         "./getMappedType.ts",
+        "./getReturnType.ts",
         "./index.ts",
         "./inference.ts",
         "./interfaces.d.ts",
@@ -29,7 +30,6 @@
         "./inference/default.ts",
         "./inference/event-kit.ts",
         "./inference/properties.ts",
-        "./inference/text-buffer.ts",
-        "./typings/tsd.d.ts"
+        "./inference/text-buffer.ts"
     ]
 }

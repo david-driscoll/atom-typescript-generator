@@ -45,13 +45,21 @@ interface IImport {
 }
 
 declare module Converted {
-    interface IProject {
-        name:string;
-        displayName: string;
-        classes: Converted.IClass[];
+    interface IEmitter {
+        emit({indent}: { indent: number }): string;
     }
 
-    interface IClass {
+    interface IProject extends IEmitter {
+        name:string;
+        nodeName: string;
+        displayName: string;
+        references: string[];
+        classes: Converted.IClass[];
+        notTracking: string[];
+        package: { name: string; version:string };
+    }
+
+    interface IClass extends IEmitter {
         name: string;
         superClass: string;
         docText: string;
@@ -59,13 +67,13 @@ declare module Converted {
         methods: Converted.IMethod[];
     }
 
-    interface IField {
+    interface IField extends IEmitter {
         name: string;
         type: string;
         docText: string;
     }
 
-    interface IMethod {
+    interface IMethod extends IEmitter {
         name: string;
         returnType: Converted.IReturnType[];
         docText: string;
@@ -78,7 +86,7 @@ declare module Converted {
         docText: string;
     }
 
-    interface IParameter {
+    interface IParameter extends IEmitter {
         name: string;
         type: string;
         docText: string;
