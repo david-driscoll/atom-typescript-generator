@@ -11,10 +11,6 @@ class FieldConverted implements Converted.IField {
         this.name = property.name;
         this.docText = FieldConverted.getDocText(property);
         this.type = this._getPropertyType(cls, property);
-        /*
-            var doc = `     * ${property.doc.description.replace(/\n/g, '\n     * ') }`;
-            if (paramDocs.length)
-                doc += `\n     * \n${paramDocs.join('') }`*/
     }
 
     public static getDocText(property: IProperty) {

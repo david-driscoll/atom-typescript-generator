@@ -82,6 +82,8 @@ declare module Converted {
         name: string;
         type: string;
         docText: string;
+        returnType?: Converted.IReturnType;
+        parameters?: Converted.IParameter[];
     }
 }
 

@@ -345,60 +345,6 @@ function getNodeName(project: string) {
     return project;
 }
 
-function getMappedType(project: string, value: string) {
-    if (_.startsWith(project, "node-")) {
-        var newName = project.replace('node-', '')
-        if (projectTypeMap[newName] && projectTypeMap[newName][value]) {
-            return projectTypeMap[newName][value];
-        }
-    }
-
-    if (value === "Grammar") {
-        return "FirstMate.Grammar";
-    }
-
-    if (value === "Repository")
-        return "any"
-
-    if (value === "semver") {
-        return "SemVerModule.SemVer";
-    }
-
-    if (value === "jQuery") {
-        return "JQuery";
-    }
-
-    if (value === "Promise") {
-        return "Q.Promise<any>";
-    }
-
-    if (value === "Bool") {
-        return "boolean";
-    }
-
-    if (value === "array") {
-        return "any[]";
-    }
-
-    if (project === "atom" && value === "View") {
-        return "SpacePen.View";
-    }
-
-    if (value === "Mixto") return '';
-    if (value === "Mixin") return '';
-    if (value === "Disposable") return 'EventKit.Disposable';
-
-    var result = projectTypeMap[project][value];
-    if (result === '.EventEmitter') {
-        result = 'NodeJS.EventEmitter'
-    }
-
-    if (_.startsWith(value, ':') || _.startsWith(value, '/'))
-        return 'any'
-
-    return result || value;
-}
-
 function getSuperType(project: string, className: string, superName: string) {
     return projectTypeMap[_.kebabCase(superName)] && projectTypeMap[_.kebabCase(superName)][className] || getMappedType(project, superName);
 }
