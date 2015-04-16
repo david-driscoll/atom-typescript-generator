@@ -9,7 +9,8 @@ var inference: InferenceMain = <any> {
     arguments: [],
     parameterTypes: [],
     parameterNames: [],
-    types: []
+    types: [],
+    remapTypes: []
 };
 
 fs.readdirSync('./inference').forEach(file => {
@@ -29,6 +30,7 @@ inference.types = <any>sortBy(inference.types, x => -(x.order));
 inference.parameterTypes = <any>sortBy(inference.parameterTypes, x => -(x.order));
 inference.names = <any>sortBy(inference.names, x => -(x.order));
 inference.parameterNames = <any>sortBy(inference.parameterNames, x => -(x.order));
+inference.remapTypes = <any>sortBy(inference.remapTypes, x => -(x.order));
 
 //console.log('ignoreProperties', inference.ignoreProperties.map((z:any) => z.predicates));
 //console.log('arguments', inference.arguments.map((z:any) => z.predicates));
@@ -52,12 +54,21 @@ inference.parameterTypes.handler = function({cls, property, name, index}) {
     var result = _(inference.parameterTypes).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
     return result;
 };
+
 inference.parameterNames.handler = function({cls, property, name, index}) {
     var result = _(inference.parameterNames).chain().map(z => z({ cls, property, name, index })).filter(z => !!z).value()[0];
     return result;
 };
+
 inference.types.handler = function({cls, property, type}) {
     return _(inference.types).chain().map(z => z({ cls, property, type })).filter(z => !!z).value()[0];
+};
+
+inference.remapTypes.handler = function({cls, property, type}) {
+    var remapedType = _(inference.remapTypes).chain().map(z => z({ cls, property, type })).filter(z => !!z).value();
+    if (remapedType.length)
+        return remapedType[0];
+    return type;
 };
 
 inference.arguments.push(function({cls, property, argument, param}) {

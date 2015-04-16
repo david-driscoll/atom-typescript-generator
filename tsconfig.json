@@ -12,6 +12,7 @@
         "./*.ts",
         "./inference/*.ts",
         "./typings/*.ts",
+        "./metadata/*.ts",
         "!./node_modules/**/*.ts"
     ],
     "files": [
@@ -30,6 +31,10 @@
         "./inference/default.ts",
         "./inference/event-kit.ts",
         "./inference/properties.ts",
-        "./inference/text-buffer.ts"
+        "./inference/text-buffer.ts",
+        "./typings/tsd.d.ts",
+        "./metadata/atom.ts",
+        "./metadata/pathwatcher.ts",
+        "./metadata/space-pen.ts"
     ]
 }

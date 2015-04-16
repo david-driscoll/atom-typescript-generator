@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import {BuilderProvider} from "../_builder";
 export default function (provider: BuilderProvider) {
     provider.ignore()
-        .forClass("Atom")
+        .forClass("AtomStatic")
         .forProperty(property => _.contains(["version", "updateLoadSetting", "workspaceViewParentSelector", "lastUncaughtError"], property.name))
         .return(true);
 
@@ -10,6 +10,16 @@ export default function (provider: BuilderProvider) {
         .forClass("AtomApplication")
         .forProperty("windows")
         .return("AtomWindow[]");
+
+    provider.type()
+        .forClass("Project")
+        .forProperty("open")
+        .return("Q.Promise<TextEditor>")
+
+    provider.type()
+        .forClass("Workspace")
+        .forProperty("open")
+        .return("Q.Promise<TextEditor>")
 };
 
 //var ignoreAtomProperties: Inference.IgnoreProperty = function({cls, property}) {

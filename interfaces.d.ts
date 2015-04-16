@@ -27,7 +27,9 @@ interface IDocReturn {
 interface IClass extends ICommon {
     superClass?: string;
     properties: IProperty[];
+    staticProperties: IProperty[];
     project: string;
+    content: string[];
 }
 interface IProperty extends ICommon {
     paramNames?: string[];
@@ -43,6 +45,11 @@ interface IImport {
     project: string;
     fromProject: string;
 }
+interface IExport {
+    error?: any;
+    project: string;
+    values: string[];
+}
 
 declare module Converted {
     interface IEmitter {
@@ -50,13 +57,27 @@ declare module Converted {
     }
 
     interface IProject extends IEmitter {
-        name:string;
+        name: string;
         nodeName: string;
         displayName: string;
-        references: string[];
+        references: IImport[];
         classes: Converted.IClass[];
         notTracking: string[];
-        package: { name: string; version:string };
+        package: { name: string; version: string };
+        exports: IExport[];
+    }
+
+    interface IImport {
+        project: string;
+        projectName: string;
+        projectNodeName: string;
+    }
+
+    interface IExport {
+        project?: string;
+        projectName?: string;
+        projectNodeName?: string;
+        name: string;
     }
 
     interface IClass extends IEmitter {
@@ -65,16 +86,19 @@ declare module Converted {
         docText: string;
         fields: Converted.IField[];
         methods: Converted.IMethod[];
+        export: boolean;
     }
 
     interface IField extends IEmitter {
         name: string;
+        isStatic: boolean;
         type: string;
         docText: string;
     }
 
     interface IMethod extends IEmitter {
         name: string;
+        isStatic: boolean;
         returnType: Converted.IReturnType[];
         docText: string;
         parameters: Converted.IParameter[];
@@ -95,16 +119,6 @@ declare module Converted {
     }
 }
 
-
-interface Inference {
-    ignoreProperties?: Inference.IgnoreProperty[];
-    arguments?: Inference.ArgumentType[];
-    types?: Inference.TypeHandler;
-    parameterTypes?: Inference.ParameterTypeHandler;
-    names?: Inference.TypeHandler;
-    parameterNames?: Inference.ParameterNameHandler;
-}
-
 interface InferenceMain {
     ignoreProperties?: Inference.IgnorePropertyHandler;
     arguments?: Inference.ArgumentTypeHandler;
@@ -112,6 +126,7 @@ interface InferenceMain {
     parameterTypes?: Inference.ParameterTypeHandler;
     names?: Inference.NameHandler;
     parameterNames?: Inference.ParameterNameHandler;
+    remapTypes?: Inference.RemapTypeHandler;
 }
 
 declare module Inference {
@@ -155,46 +170,54 @@ declare module Inference {
     }
 
     interface IgnorePropertyHandler extends Array<IgnoreProperty> {
-        handler({ cls, property } : IgnorePropertyArguments) : boolean;
+        handler({ cls, property }: IgnorePropertyArguments): boolean;
     }
 
     interface ArgumentType extends Base {
-        ({cls, property, argument, param} : ArgumentTypeArguments): string;
+        ({cls, property, argument, param}: ArgumentTypeArguments): string;
     }
 
     interface ArgumentTypeHandler extends Array<ArgumentType> {
-        handler({cls, property, argument, param} : ArgumentTypeArguments) : string;
+        handler({cls, property, argument, param}: ArgumentTypeArguments): string;
     }
 
     interface ParameterType extends Base {
-        ({cls, property, name, index} : ParameterArguments): string;
+        ({cls, property, name, index}: ParameterArguments): string;
     }
 
     interface ParameterTypeHandler extends Array<ParameterType> {
-        handler({cls, property, name, index} : ParameterArguments) : string;
+        handler({cls, property, name, index}: ParameterArguments): string;
     }
 
     interface ParameterName extends Base {
-        ({cls, property, name, index} : ParameterArguments): string;
+        ({cls, property, name, index}: ParameterArguments): string;
     }
 
     interface ParameterNameHandler extends Array<ParameterName> {
-        handler({cls, property, name, index} : ParameterArguments) ; string;
+        handler({cls, property, name, index}: ParameterArguments); string;
     }
 
     interface Type extends Base {
-        ({cls, property, type} : TypeArguments): string;
+        ({cls, property, type}: TypeArguments): string;
     }
 
     interface TypeHandler extends Array<Type> {
-        handler({cls, property, type} : TypeArguments) : string;
+        handler({cls, property, type}: TypeArguments): string;
     }
 
     interface Name extends Base {
-        ({cls, property, name} : NameArguments): string;
+        ({cls, property, name}: NameArguments): string;
     }
 
     interface NameHandler extends Array<Name> {
-        handler({cls, property, name} : NameArguments) : string;
+        handler({cls, property, name}: NameArguments): string;
+    }
+
+    interface RemapType extends Base {
+        ({cls, property, type}: TypeArguments): string;
+    }
+
+    interface RemapTypeHandler extends Array<RemapType> {
+        handler({cls, property, type}: TypeArguments): string;
     }
 }

@@ -13,9 +13,18 @@ class Builder {
         this.values.push(value.toString());
     }
 
+    private predicateForName(key: string, value: string) {
+        this.predicates.push((obj) => _.has(obj, key) && obj[key]['name'] === value);
+        this.values.push(value.toString());
+    }
+
     //public forClass(value: (cls: IClass) => any): Builder;
     public forClass(value: string|Function): Builder {
-        this.predicateFor('cls', value);
+        if (typeof value === 'string') {
+            this.predicateForName('cls', value);
+        } else {
+            this.predicateFor('cls', value);
+        }
         return this;
     }
 
@@ -34,7 +43,11 @@ class Builder {
 
     //public forProperty(value: (property: IProperty) => any): Builder;
     public forProperty(value: string|Function): Builder {
-        this.predicateFor('property', value);
+        if (typeof value === 'string') {
+            this.predicateForName('property', value);
+        } else {
+            this.predicateFor('property', value);
+        }
         return this;
     }
 
@@ -77,7 +90,11 @@ class Builder {
 
     //public forArgument(value: (argument: IDocArgument) => any): Builder;
     public forArgument(value: string|Function): Builder {
-        this.predicateFor('argument', value);
+        if (typeof value === 'string') {
+            this.predicateForName('argument', value);
+        } else {
+            this.predicateFor('argument', value);
+        }
         return this;
     }
 
@@ -192,13 +209,6 @@ class ParameterBuilder {
         return this;
     }
 
-    public forPropertyName(value: (property: string) => any): ParameterBuilder;
-    public forPropertyName(value: string|Function): ParameterBuilder
-    public forPropertyName(value: any): ParameterBuilder {
-        this.builder.forName(value);
-        return this;
-    }
-
     public forName(value: (name: string) => any): ParameterBuilder;
     public forName(value: string|Function): ParameterBuilder
     public forName(value: any): ParameterBuilder {
@@ -230,7 +240,7 @@ class ParameterBuilder {
 class TypeBuilder {
     private builder = new Builder();
     private parameterTypeBuilder = new Builder();
-    constructor(private handler: Inference.TypeHandler, private parameterTypeHandler: Inference.ParameterTypeHandler) {
+    constructor(private handler: Inference.TypeHandler | Inference.RemapTypeHandler, private parameterTypeHandler?: Inference.ParameterTypeHandler) {
 
     }
 
@@ -283,7 +293,8 @@ class TypeBuilder {
         var method: any = this.parameterTypeBuilder.return(result);
         method.order = this._order;
         method.predicates = this.parameterTypeBuilder.values.concat([result.toString()]);
-        this.parameterTypeHandler.push(method);
+        if (this.parameterTypeHandler)
+            this.parameterTypeHandler.push(method);
     }
 
     public return(result?: any): any {
@@ -295,7 +306,8 @@ class TypeBuilder {
         var method: any = this.parameterTypeBuilder.return(result);
         method.order = this._order;
         method.predicates = this.parameterTypeBuilder.values.concat([result.toString()]);
-        this.parameterTypeHandler.push(method);
+        if (this.parameterTypeHandler)
+            this.parameterTypeHandler.push(method);
     }
 
     private _order = 0;
@@ -438,6 +450,10 @@ export class BuilderProvider {
 
     public type() {
         return new TypeBuilder(this.inference.types, this.inference.parameterTypes);
+    }
+
+    public remapType() {
+        return new TypeBuilder(this.inference.remapTypes);
     }
 
     public paramType() {

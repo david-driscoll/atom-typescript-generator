@@ -9,7 +9,7 @@ export default function (provider: BuilderProvider) {
     provider.paramType()
         .forClass("Emitter")
         .forName(name => _.contains(name.toLowerCase(), "handler"))
-        .return("...value: any[]");
+        .return("(...value: any[]) => void");
 
     provider.paramName()
         .forClass("Emitter")
