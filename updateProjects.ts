@@ -11,14 +11,14 @@ export var references : string[] = projectsToDocument.references;
 projectsToDocument.projects.forEach(project => {
     if (existsSync(`../${project}`)) {
         // pull?
-        /*console.log(`Pulling ${project}...`)
+        console.log(`Pulling ${project}...`)
         execSync(`git pull`, {
             cwd: join(process.cwd(), `../${project}`),
             stdio: 'inherit'
         });
         if (existsSync('./metadata.json')) {
             unlinkSync('./metadata.json');
-        }*/
+        }
     } else {
         // clone
         execSync(`git clone git@github.com:atom/${project}.git`, {

@@ -1,9 +1,17 @@
 import * as _ from "lodash";
 import {BuilderProvider} from "../_builder";
-export default function (provider: BuilderProvider) {
+export default function(provider: BuilderProvider) {
     provider.ignore()
         .order(-1000)
         .return(false);
+
+    provider.ignore()
+        .forClass(cls => cls.doc && cls.doc.description && cls.doc.description.toLowerCase().indexOf("deprecated") > -1)
+        .return(true);
+
+    provider.ignore()
+        .forProperty(property => property.doc && property.doc.description && property.doc.description.toLowerCase().indexOf("deprecated") > -1)
+        .return(true);
 
     provider.type()
         .order(-1000)
@@ -20,16 +28,11 @@ export default function (provider: BuilderProvider) {
         .forPropertyName(name => (name.toLowerCase() === 'column' || name.toLowerCase() === 'row'))
         .return('number');
 
-//    provider.name()
-//        .order(-1000)
-//        .compute(function({cls, property, name}) {
-//            return name + '?'
-//        });
     provider.paramName()
         .order(-1000)
         .compute(function({cls, property, name, index}) {
-            return ((property.paramNames && property.paramNames[index]) || name) + '?'
-        });
+        return ((property.paramNames && property.paramNames[index]) || name) + '?'
+    });
 };
 
 /*
