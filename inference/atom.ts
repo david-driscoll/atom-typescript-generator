@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {BuilderProvider} from "../_builder";
-export default function (provider: BuilderProvider) {
+export default function(provider: BuilderProvider) {
     provider.ignore()
         .forClass("AtomStatic")
         .forProperty(property => _.contains(["version", "updateLoadSetting", "workspaceViewParentSelector", "lastUncaughtError"], property.name))
@@ -20,6 +20,26 @@ export default function (provider: BuilderProvider) {
         .forClass("Workspace")
         .forProperty("open")
         .return("Q.Promise<TextEditor>")
+
+    provider.remapType()
+        .forProperty(property => _.startsWith(property.name, "get") && _.endsWith(property.name, "TextEditor"))
+        .forType(type => type == "any" || type == "Object")
+        .return("Atom.TextEditor")
+
+    provider.remapType()
+        .forProperty(property => _.startsWith(property.name, "get") && _.endsWith(property.name, "TextEditors"))
+        .forType(type => type == "any" || type == "any[]")
+        .return("Atom.TextEditor[]")
+
+    provider.paramName()
+        .forProperty(property => _.startsWith(property.name, "observeTextEditors"))
+        .forName("callback")
+        .return("callback");
+
+    provider.paramType()
+        .forProperty("observeTextEditors")
+        .forName("callback")
+        .return("(editor: Atom.TextEditor) => void");
 };
 
 //var ignoreAtomProperties: Inference.IgnoreProperty = function({cls, property}) {

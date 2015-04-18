@@ -1,4 +1,5 @@
 import * as _ from 'lodash'
+import {readFileSync} from 'fs'
 function makeProperty(name: string) {
     return `static ${name}(...args : any[]) : Builder;`;
 }
@@ -13,6 +14,26 @@ var spacePenStaticProperties = _.sortBy(_.unique(`
  th thead time title tr u ul var video area base br col command embed hr img
  input keygen link meta param source track wbr area base br col command embed
  hr img input keygen link meta param source track wbr`.split(/\s+/))).filter(z => !!z).map(makeProperty);
+
+var jquery = readFileSync('./typings/jquery/jquery.d.ts').toString('utf-8').split('\n');
+var parsingStatic = false, staticContent = [], parsing = false, content = [];
+
+while (jquery.length) {
+    var current = jquery.shift();
+    if (current.match(/^interface JQueryStatic \{/)) {
+        //parsingStatic = true;
+    } else if (current.match(/^interface JQuery \{/)) {
+        parsing = true;
+    } else if (current.match(/^\}/)) {
+        parsing = parsingStatic = false;
+    } else if (parsing) {
+        content.push(_.trim(current).replace("arguments: any[]", "args: any[]"));
+    } else if (parsingStatic) {
+        //staticContent.push(_.trim(current));
+    }
+}
+
+spacePenStaticProperties.push(... content);
 
 export default {
     content: { "space-pen.View": spacePenStaticProperties },

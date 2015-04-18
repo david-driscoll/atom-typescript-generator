@@ -26,10 +26,6 @@ export default function (provider: BuilderProvider) {
             });
 
         provider.remapType()
-            .forProperty(property => {
-                console.log(property.name);
-                return true;
-            })
             .forType((type) => type === "TextBuffer.Point")
             .return("TextBuffer.Point | [number, number]")
 

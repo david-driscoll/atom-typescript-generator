@@ -29,7 +29,7 @@ class ProjectConverted implements Converted.IProject {
         this.references = _.unique(_.intersection(projectMap[this.name], projects)
             .concat(projectReferences)
             .filter(z => !!z)
-        ).map(ref => ({
+            ).map(ref => ({
             project: ref,
             projectName: ProjectConverted.getProjectDisplayName(ref),
             projectNodeName: getNodeName(ref)
@@ -58,13 +58,13 @@ class ProjectConverted implements Converted.IProject {
             this.classes.forEach(cls => {
                 if (_.any(this.exports, exp => cls.name === exp.name)) {
                     //console.log(cls.name);
-                    cls.export = true;
-                    this.exports = this.exports.filter(z => z.name !== cls.name);
+                    if (cls.name !== this.displayName) {
+                        cls.export = true;
+                        this.exports = this.exports.filter(z => z.name !== cls.name);
+                    }
                 }
             });
         }
-
-        console.log(this.exports)
     }
 
     public static getProjectDisplayName(project: string) {
@@ -80,48 +80,71 @@ class ProjectConverted implements Converted.IProject {
     }
 
     public emit({indent}: { indent: number }) {
+
+        console.log(this.displayName)
         var lines = [];
 
         _.each(this.references, ref => lines.push(`/// <reference path="../${ref.projectNodeName }/${ref.projectNodeName }.d.ts" />`))
 
         lines.push(`declare module ${this.displayName} {`)
-        _.map(this.classes.filter(z => !z.export), cls => cls.emit({ indent: indent + 4 })).forEach(str => {
+        _.map(this.classes, cls => cls.emit({ indent: indent + 4 })).forEach(str => {
             lines.push(str.substring(indent));
             lines.push('');
         });
         lines.push(`}`)
-        if (this.exports.length) {
-            lines.push(`declare module "${this.name}" {`);
-            this.references.forEach(ref =>
-                lines.push(_.repeat(' ', indent + 4) + `import ${ref.projectName } = require("${ref.project}");`));
-            lines.push('');
-
-            _.map(this.classes.filter(z => z.export), cls => cls.emit({ indent: indent + 4 })).forEach(str => {
-                lines.push(str.substring(indent));
-                lines.push('');
+        if (this.exports.length || (moduleContent[this.name] && moduleContent[this.name].length) || this.classes.filter(x => x.export).length) {
+            lines.push(`declare module "${this.nodeName}" {`);
+            /*this.references.forEach(ref => {
+                var exp = '';
+                if (_.any(this.exports, exp => ref.projectName === exp.name)) {
+                    exp = 'export ';
+                }
+                lines.push(_.repeat(' ', indent + 4) + `${exp}import ${ref.projectName } = require("${ref.projectNodeName}");`);
             });
+            lines.push('');*/
+
+            if (this.classes.filter(x => x.export).length === 1) {
+                lines.push(_.repeat(' ', indent + 4) + `export = ${this.displayName}.${this.classes[0].name};`)
+            } else {
+                this.classes.filter(x => x.export).forEach(x => {
+                    var name = x.name;
+                    if (name === this.displayName) {
+                        name = '_' + this.displayName;
+                    }
+
+                    lines.push(_.repeat(' ', indent + 4) + `class ${name} extends ${this.displayName}.${x.name} {}`);
+                });
+            }
 
             _.map(this.exports, exp => {
+                // special cases
                 if (_.contains(exp.name, 'jQuery') || _.contains(exp.name, '$'))
                     return '';
+
+                var name = exp.name;
+                if (name === this.displayName) {
+                    name = '_' + this.displayName;
+                }
+
                 var item = _.repeat(' ', indent + 4);
                 if (exp.project) {
-                    return `${item}export var ${exp.name} : typeof ${exp.projectName}.${exp.name};`;
+                    return `${item}var ${exp.name} : typeof ${exp.projectName}.${exp.name};`;
                 } else {
                     var cls = _.find(classes, x => x.name === exp.name);
-                    if (cls) {
-                        return `${item}export var ${exp.name} : typeof ${ProjectConverted.getProjectDisplayName(cls.project)}.${exp.name};`;
+
+                    if (cls && ProjectConverted.getProjectDisplayName(cls.project) !== exp.name && !_.any(this.references, imp => imp.projectName === cls.name)) {
+                        return `${item}class ${exp.name} extends ${ProjectConverted.getProjectDisplayName(cls.project) }.${exp.name} {}`;
                     } else {
-                        return `${item}export var ${exp.name} : typeof ${this.displayName}.${exp.name};`;
+                        //return `${item}export var ${exp.name} : typeof ${this.displayName}.${exp.name};`;
                     }
                 }
             })
-            .filter(z => !!z)
-            .forEach(str => {
+                .filter(z => !!z)
+                .forEach(str => {
                 lines.push(str);
             });
             if (moduleContent[this.name]) {
-                lines.push(... _.map(moduleContent[this.name], x => _.repeat(' ', indent + 4) + x));
+                lines.push(..._.map(moduleContent[this.name], x => _.repeat(' ', indent + 4) + x));
             }
             lines.push(`}`);
         }

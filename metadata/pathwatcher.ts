@@ -1,9 +1,7 @@
 var items = [
-    'var watch(path:string, callback?: (event: any, newFilePath: string) ) : PathWatcher.PathWatcher;',
-    'var closeAllWatchers() => void;',
-    'var getWatchedPaths() => string[];',
-    'var File: typeof PathWatcher.File;',
-    'var Directory: typeof PathWatcher.Directory;'
+    'function watch(path:string, callback?: (event: any, newFilePath: string) => void ) : any;',
+    'function closeAllWatchers() : void;',
+    'function getWatchedPaths() : string[];'
 ];
 
-export default { content: { "pathwatcher.View": items } };
+export default { moduleContent: { "node-pathwatcher": items } };

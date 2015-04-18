@@ -89,8 +89,6 @@ export class DocReturnTypeConverted implements Converted.IReturnType {
         if (_.startsWith(this.type, Project.getProjectDisplayName(cls.project) + '.')) {
             this.type = this.type.split('.')[1];
         }
-        if (property.name === "open")
-            console.log('hello...', cls.name, property.name, this.type, inference.types.handler({ cls, property, type: 'any' }))
         //this.type = inference.remapTypes.handler({ cls, property, type: this.type });
     }
 

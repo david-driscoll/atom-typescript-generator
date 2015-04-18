@@ -38,7 +38,7 @@ class FieldConverted implements Converted.IField {
                 type = type.substr(type.indexOf('{') + 1);
                 type = type.substr(0, type.indexOf('}'));
 
-                console.log(type, projectTypeMap[type])
+                //console.log(type, projectTypeMap[type])
                 var typeCls = _.find(classes, x => x.name == type);
                 if (typeCls) {
                     if (typeCls.project === cls.project) {

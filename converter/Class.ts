@@ -72,13 +72,13 @@ class ClassConverted implements Converted.IClass {
         lines.push(' */');
 
         if (_.find(knownClasses, x => x === this.superClass)) {
-            lines.push(`${(this.export && 'export ' || '')}class ${this.name} extends ${this.superClass} {`)
+            lines.push(`${this.export ? 'export ' : ''}class ${this.name} extends ${this.superClass} {`)
         } else if (_.find(knownSuperClasses, x => x === this.superClass)) {
-            lines.push(`${(this.export && 'export ' || '')}class ${this.name} extends ${this.superClass} {`)
+            lines.push(`${this.export ? 'export ' : ''}class ${this.name} extends ${this.superClass} {`)
         } else if (this.superClass) {
-            lines.push(`${(this.export && 'export ' || '')}class ${this.name} /*extends ${this.superClass}*/ {`)
+            lines.push(`${this.export ? 'export ' : ''}class ${this.name} /*extends ${this.superClass}*/ {`)
         } else {
-            lines.push(`${(this.export && 'export ' || '')}class ${this.name} {`)
+            lines.push(`${this.export ? 'export ' : ''}class ${this.name} {`)
         }
 
         _.map(this.staticFields, x => x.emit({ indent: indent + 4 })).forEach(str => {
@@ -100,7 +100,7 @@ class ClassConverted implements Converted.IClass {
             lines.push(str.substring(indent));
             lines.push('');
         });
-        
+
         if (this.content.length) {
             lines.push('')
             lines.push(... this.content.map(z => _.repeat(' ', indent) + z));

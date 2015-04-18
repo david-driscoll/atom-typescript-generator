@@ -8,8 +8,6 @@
 //${refs}
 
 //${content}
-
-// Found @ https://github.com/atom/atom/blob/master/exports/atom.coffee
 declare module "fs-plus" {
     import fs = require("fs");
     export = fs;
