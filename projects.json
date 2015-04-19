@@ -12,7 +12,8 @@
         "status-bar",
         "scoped-property-store",
         "property-accessors",
-        "scandal"
+        "scandal",
+        "git@github.com:AtomLinter/Linter.git"
     ],
     "references": [
         "semver",

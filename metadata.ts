@@ -1,5 +1,11 @@
 import {readFileSync, writeFileSync, existsSync, readdirSync} from 'fs'
-var projectsToDocument = require('./projects.json').projects;
+var projectsToDocument = require('./projects.json').projects.map(z => {
+    if (z.indexOf('git@') === 0) {
+        return z.match(/git@.*?\/(.*?)\.git/)[1].toLowerCase();
+    } else {
+        return z;
+    }
+});
 var donna = require('donna');
 var atomdoc = require('atomdoc');
 import * as _ from 'lodash'

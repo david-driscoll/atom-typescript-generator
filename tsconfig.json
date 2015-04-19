@@ -36,6 +36,7 @@
         "./metadata/atom-keymap.ts",
         "./metadata/atom.ts",
         "./metadata/first-mate.ts",
+        "./metadata/linter.ts",
         "./metadata/pathwatcher.ts",
         "./metadata/property-accessors.ts",
         "./metadata/scandal.ts",
