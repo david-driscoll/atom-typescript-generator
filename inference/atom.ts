@@ -21,6 +21,18 @@ export default function(provider: BuilderProvider) {
         .forProperty("open")
         .return("Q.Promise<TextEditor>")
 
+    provider.type()
+        .forProperty(property => _.startsWith("set") || _.startsWith("update"))
+        .return("void");
+
+    provider.type()
+        .forProperty("copy")
+        .compute(function ({cls, property, type}) {
+            return cls.name;
+        });
+
+    provider.paramType().forName("visible").return("boolean");
+
     provider.remapType()
         .forProperty(property => _.startsWith(property.name, "get") && _.endsWith(property.name, "TextEditor"))
         .forType(type => type == "any" || type == "Object")

@@ -14,6 +14,15 @@ export default function(provider: BuilderProvider) {
         .return(true);
 
     provider.type()
+        .forProperty(property => _.startsWith("set") || _.startsWith("update") || _.startsWith("emitDid"))
+        .return("void");
+
+    provider.type()
+        .order(-1000)
+        .forPropertyName(name => _.startsWith(name, 'onDid') || _.startsWith(name.toLowerCase(), 'observe') || _.startsWith(name.toLowerCase(), 'onWill'))
+        .return("EventKit.Disposable");
+
+    provider.type()
         .order(-1000)
         .forPropertyName(name => _.endsWith(name.toLowerCase(), 'name'))
         .return("string");

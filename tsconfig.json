@@ -32,7 +32,6 @@
         "./inference/event-kit.ts",
         "./inference/properties.ts",
         "./inference/text-buffer.ts",
-        "./typings/tsd.d.ts",
         "./metadata/atom-keymap.ts",
         "./metadata/atom.ts",
         "./metadata/first-mate.ts",

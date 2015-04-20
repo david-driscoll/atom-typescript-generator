@@ -16,6 +16,16 @@ export default function (provider: BuilderProvider) {
                 return '[number, number]';
             });
 
+        provider.type()
+            .forClass('Cursor')
+            .forPropertyName("getBuffer")
+            .return("TextBuffer.TextBuffer");
+
+        provider.type()
+            .forClass('Cursor')
+            .forPropertyName(name => name.toLowerCase() == "geturi")
+            .return("string");
+
         provider.paramType()
             .forClass('Cursor')
             .forProperty(property => {
