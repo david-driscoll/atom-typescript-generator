@@ -13,7 +13,7 @@ class FieldConverted implements Converted.IField {
         this.name = property.name;
         this.docText = FieldConverted.getDocText(property);
         this.type = this._getPropertyType(cls, property);
-        this.type = inference.remapTypes.handler({ cls, property, type: this.type });
+        this.type = inference.remapTypes.handler({ cls, property, type: this.type, param: false });
     }
 
     public static getDocText(property: IProperty) {

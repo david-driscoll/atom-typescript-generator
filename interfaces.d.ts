@@ -147,6 +147,10 @@ declare module Inference {
         type: string;
     }
 
+    interface RemapTypeArguments extends TypeArguments {
+        param: boolean;
+    }
+
     interface NameArguments extends IgnorePropertyArguments {
         name: string;
     }
@@ -214,10 +218,10 @@ declare module Inference {
     }
 
     interface RemapType extends Base {
-        ({cls, property, type}: TypeArguments): string;
+        ({cls, property, type, param}: RemapTypeArguments): string;
     }
 
     interface RemapTypeHandler extends Array<RemapType> {
-        handler({cls, property, type}: TypeArguments): string;
+        handler({cls, property, type, param}: RemapTypeArguments): string;
     }
 }

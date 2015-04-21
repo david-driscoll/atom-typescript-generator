@@ -47,7 +47,7 @@ class ParameterConverted implements Converted.IParameter {
                 this.type = inference.parameterTypes.handler({ cls, property, name: name, index }) || getMappedType(cls, doc.type);
             }
 
-            this.docText = `@param ${this.name} - ${doc.description}`;
+            this.docText = ` * @param ${this.name} - ${doc.description}`;
             if (this.parameters.length) {
                 _.each(this.parameters, x => {
                     this.docText += '\n' + x.docText;
@@ -58,12 +58,15 @@ class ParameterConverted implements Converted.IParameter {
         if (_.startsWith(this.type, Project.getProjectDisplayName(cls.project) + '.')) {
             this.type = this.type.split('.')[1];
         }
-        this.type = inference.remapTypes.handler({ cls, property, type: this.type });
+        this.type = inference.remapTypes.handler({ cls, property, type: this.type, param: true });
     }
 
     public emit({indent}: { indent: number }) {
         if (this.parameters.length) {
-            return `${this.name} : (${this.parameters.map(z => z.emit({indent}))}) => ${this.type}`
+            if (this.type === 'Object')
+                return `${this.name} : { ${this.parameters.map(z => z.emit({ indent })) } }`
+            else
+                return `${this.name} : (${this.parameters.map(z => z.emit({ indent })) }) => ${this.type}`
         } else {
             return `${this.name} : ${this.type}`;
         }

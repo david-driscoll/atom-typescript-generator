@@ -21,28 +21,6 @@ export default function(provider: BuilderProvider) {
         .forProperty("open")
         .return("Q.Promise<TextEditor>")
 
-    provider.type()
-        .forProperty(property => _.startsWith("set") || _.startsWith("update"))
-        .return("void");
-
-    provider.type()
-        .forProperty("copy")
-        .compute(function ({cls, property, type}) {
-            return cls.name;
-        });
-
-    provider.paramType().forName("visible").return("boolean");
-
-    provider.remapType()
-        .forProperty(property => _.startsWith(property.name, "get") && _.endsWith(property.name, "TextEditor"))
-        .forType(type => type == "any" || type == "Object")
-        .return("Atom.TextEditor")
-
-    provider.remapType()
-        .forProperty(property => _.startsWith(property.name, "get") && _.endsWith(property.name, "TextEditors"))
-        .forType(type => type == "any" || type == "any[]")
-        .return("Atom.TextEditor[]")
-
     provider.paramName()
         .forProperty(property => _.startsWith(property.name, "observeTextEditors"))
         .forName("callback")
@@ -52,6 +30,19 @@ export default function(provider: BuilderProvider) {
         .forProperty("observeTextEditors")
         .forName("callback")
         .return("(editor: Atom.TextEditor) => void");
+
+    provider.type()
+        .forPropertyName(name => _.any(['insert'], z => _.startsWith(name, z)))
+        .return("TextBuffer.Range | boolean");
+
+    provider.type()
+        .forPropertyName(name => _.startsWith(name, "tokenizedLines"))
+        .return("TokenizedLine[]");
+
+    provider.type()
+        .forPropertyName(name => _.startsWith(name, "tokenizedLine"))
+        .return("TokenizedLine");
+
 };
 
 //var ignoreAtomProperties: Inference.IgnoreProperty = function({cls, property}) {

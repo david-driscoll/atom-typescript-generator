@@ -4,7 +4,7 @@ class Builder {
     public predicates: ((arg: any) => any)[] = [];
     public values: any[] = [];
 
-    private predicateFor(key: string, value: string | Function) {
+    public predicateFor(key: string, value: string | Function) {
         if (typeof value === 'function') {
             this.predicates.push((obj) => _.has(obj, key) && value(obj[key]));
         } else {
@@ -240,8 +240,10 @@ class ParameterBuilder {
 class TypeBuilder {
     private builder = new Builder();
     private parameterTypeBuilder = new Builder();
-    constructor(private handler: Inference.TypeHandler | Inference.RemapTypeHandler, private parameterTypeHandler?: Inference.ParameterTypeHandler) {
-
+    constructor(private handler: Inference.TypeHandler | Inference.RemapTypeHandler, private parameterTypeHandler?: Inference.ParameterTypeHandler, private _paramOnly: boolean = false) {
+        if (_paramOnly) {
+            this.builder.predicateFor("param", z => z === true);
+        }
     }
 
     public forClass(value: (cls: IClass) => any): TypeBuilder;
@@ -452,8 +454,8 @@ export class BuilderProvider {
         return new TypeBuilder(this.inference.types, this.inference.parameterTypes);
     }
 
-    public remapType() {
-        return new TypeBuilder(this.inference.remapTypes);
+    public remapType(paramOnly: boolean = false) {
+        return new TypeBuilder(this.inference.remapTypes, null, paramOnly);
     }
 
     public paramType() {
