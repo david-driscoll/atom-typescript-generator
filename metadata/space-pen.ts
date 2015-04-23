@@ -26,12 +26,16 @@ while (jquery.length) {
         parsing = true;
     } else if (current.match(/^\}/)) {
         parsing = parsingStatic = false;
-    } else if (parsing) {
+    } else if (parsing && !_.contains(current, 'hide(') && !_.contains(current, 'show(') && !_.contains(current, 'toggle(')) {
         content.push(_.trim(current).replace("arguments: any[]", "args: any[]"));
     } else if (parsingStatic) {
         //staticContent.push(_.trim(current));
     }
 }
+
+content.push('hide(): void;');
+content.push('show(): void;');
+content.push('toggle(): void;');
 
 spacePenStaticProperties.push(... content);
 

@@ -43,6 +43,20 @@ export default function(provider: BuilderProvider) {
         .forPropertyName(name => _.startsWith(name, "tokenizedLine"))
         .return("TokenizedLine");
 
+    provider.type()
+        .forPropertyName(name => _.startsWith(name, "tokenizedLine"))
+        .return("TokenizedLine");
+
+    provider.type()
+        .forPropertyName("createView")
+        .return("(model: any) => HTMLElement");
+
+    provider.remapType(true)
+        .order(1000)
+        .forProperty(z => _.startsWith(z.name, 'add') && _.endsWith(z.name, 'Panel'))
+        .forType(name => name === "Object")
+        .return("{ item: Node | JQuery | Object; visible?: boolean; priority?: number; }")
+
 };
 
 //var ignoreAtomProperties: Inference.IgnoreProperty = function({cls, property}) {

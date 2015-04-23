@@ -15,6 +15,24 @@ export default function(provider: BuilderProvider) {
         .forProperty(property => property.doc && property.doc.description && property.doc.description.toLowerCase().indexOf("deprecated") > -1)
         .return(true);
 
+    function getProperName(name: string) {
+        if (_.endsWith(name, 'ies')) {
+            return name.replace(/ies$/, 'y');
+        } else if (_.endsWith(name, 's')) {
+            return name.replace(/s$/, '');
+        }
+        return name;
+    }
+
+    function endsWithS(name: string, clsName: string) {
+        if (_.endsWith(name, 'ies')) {
+            _.endsWith(getProperName(name).toLowerCase().replace(/ies$/, 'y')
+        } else {
+            return _.endsWith(name.toLowerCase(), clsName.toLowerCase() + 's')
+        }
+
+    }
+
     provider.type()
         .order(-1000)
         .forPropertyName(name => _.any(knownClasses, cls => name && _.endsWith(name.toLowerCase(), cls.toLowerCase())))
@@ -32,10 +50,10 @@ export default function(provider: BuilderProvider) {
 
     provider.type()
         .order(-1000)
-        .forPropertyName(name => _.any(knownClasses, cls => name && _.endsWith(name.toLowerCase(), cls.toLowerCase() + 's')))
+        .forPropertyName(name => _.any(knownClasses, cls => name && _.endsWith(getProperName(name).toLowerCase(), cls.toLowerCase())))
         .compute(function({cls, property, type}) {
         var propertyName = property && property.name.toLowerCase();
-        var targetClass = _.find(classes, kc => property.name && _.endsWith(propertyName, kc.name.toLowerCase() + 's'));
+        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
         if (!targetClass)
             return null;
         //if (_.any(['Selector', 'Scanner', 'Grammar', 'Config'], z => z === targetClass.name))
@@ -64,12 +82,12 @@ export default function(provider: BuilderProvider) {
 
     provider.paramType()
         .order(-1000)
-        .forName(name => _.any(knownClasses, cls => name && _.endsWith(name.toLowerCase(), cls.toLowerCase() + 's')))
+        .forName(name => _.any(knownClasses, cls => name && _.endsWith(getProperName(name).toLowerCase(), cls.toLowerCase())))
         .compute(function({cls, property, name, index}) {
         if (_.endsWith(cls.name, 'View'))
             return null;
         var propertyName = name && name.toLowerCase();
-        var targetClass = _.find(classes, kc => property.name && _.endsWith(propertyName, kc.name.toLowerCase() + 's'));
+        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
         if (!targetClass)
             return null;
         //if (_.any(['Selector', 'Scanner', 'Grammar', 'Config'], z => z === targetClass.name))
@@ -78,6 +96,11 @@ export default function(provider: BuilderProvider) {
             return targetClass.name + '[]';
         return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
     });
+
+    provider.type()
+        .order(-1000)
+        .forPropertyName(name => name === "getCurrentWindow")
+        .return("Atom.AtomWindow");
 
     provider.type()
         .forPropertyName(name => _.contains(name, "activatePackages"))
