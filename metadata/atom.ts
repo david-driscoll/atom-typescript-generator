@@ -1,5 +1,25 @@
 export default  {
-    content: { "atom.Atom": ['emitter: EventKit.Emitter;', 'interface MenuItem { label:string; accelerator:string; metadata: any, submenu: MenuItem[], click: () => void }'] },
+    content: {
+        "atom.Atom": ['emitter: EventKit.Emitter;'],
+        "atom.CommandRegistry": [
+            'add(target : string | JQuery | Node, commands: { [commandName: string]: (event: Event) => void })'
+        ],
+        "atom.Config": [
+            'observe(keyPath: string, callback: (value: any) => void): EventKit.Disposable',
+            'observe(keyPath: string, options: { scopeDescriptor: ScopeDescriptor }, callback: (value: any) => void): EventKit.Disposable',
+            'onDidChange(callback: (item: { keyPath: string; oldValue: any; newValue: any; }) => void): EventKit.Disposable',
+            'onDidChange(keyPath: string, callback: (item: { keyPath: string; oldValue: any; newValue: any;}) => void): EventKit.Disposable',
+            'onDidChange(keyPath: string, options: { scopeDescriptor: ScopeDescriptor }, callback: (item: { keyPath: string; oldValue: any; newValue: any; }) => void): EventKit.Disposable',
+            'get<T>(keyPath: string, options?: { sources: string[]; excludeSources: string[]; scope: ScopeDescriptor }): T',
+            'set(keyPath: string, value: any, options?: { scopeSelector: string; source: string })',
+        ],
+    },
+    moduleContent: {
+        "Atom": [
+            'interface MenuItem { label:string; accelerator?:string; metadata?: any, submenu?: MenuItem[], click?: () => void }',
+            'interface ContextMenuItem { label?:string; command?:string; submenu: ContextMenuItem[]; type: string; created: (event: Event) => void; shouldDisplay: (event: Event) => void; }',
+        ]
+    },
     imports: {
         "atom": ['node-pathwatcher']
     },

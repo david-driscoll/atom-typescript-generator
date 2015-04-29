@@ -30,6 +30,7 @@ interface IClass extends ICommon {
     staticProperties: IProperty[];
     project: string;
     content: string[];
+    hidden: boolean;
 }
 interface IProperty extends ICommon {
     paramNames?: string[];
@@ -107,13 +108,13 @@ declare module Converted {
 
     interface IReturnType {
         type: string;
-        docText: string;
+        docText: string[];
     }
 
     interface IParameter extends IEmitter {
         name: string;
         type: string;
-        docText: string;
+        docText: string[];
         returnType?: Converted.IReturnType;
         parameters?: Converted.IParameter[];
     }
@@ -127,6 +128,7 @@ interface InferenceMain {
     names?: Inference.NameHandler;
     parameterNames?: Inference.ParameterNameHandler;
     remapTypes?: Inference.RemapTypeHandler;
+    hiddenClasses: string[];
 }
 
 declare module Inference {

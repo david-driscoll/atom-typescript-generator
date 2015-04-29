@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import ClassConverted from './Class';
 import {references, projects, doNotTrack} from "../updateProjects";
 import {projectMap, exported, moduleContent, classes} from "../metadata";
+import inference from "../inference";
 
 function getNodeName(project: string) {
     if (_.startsWith(project, "node-")) {
@@ -23,7 +24,9 @@ class ProjectConverted implements Converted.IProject {
 
     constructor(public name: string, classes: IClass[]) {
         this.displayName = ProjectConverted.getProjectDisplayName(name);
-        this.classes = classes.map(z => new ClassConverted(this, z));
+        this.classes = classes
+            .filter(z => !_.any(inference.hiddenClasses, x => x === z.name))
+            .map(z => new ClassConverted(this, z));
         var projectReferences = _.intersection(projectMap[this.name], references);
         this.notTracking = _.difference(projectMap[this.name], projects, doNotTrack, projectReferences).filter(z => !!z);
         this.references = _.unique(_.intersection(projectMap[this.name], projects)
@@ -81,7 +84,6 @@ class ProjectConverted implements Converted.IProject {
 
     public emit({indent}: { indent: number }) {
 
-        console.log(this.displayName)
         var lines = [];
 
         _.each(this.references, ref => lines.push(`/// <reference path="../${ref.projectNodeName }/${ref.projectNodeName }.d.ts" />`))
@@ -91,6 +93,10 @@ class ProjectConverted implements Converted.IProject {
             lines.push(str.substring(indent));
             lines.push('');
         });
+        if (moduleContent[this.displayName]) {
+            lines.push(..._.map(moduleContent[this.displayName], x => _.repeat(' ', indent + 4) + x));
+        }
+
         lines.push(`}`)
         if (this.exports.length || (moduleContent[this.name] && moduleContent[this.name].length) || this.classes.filter(x => x.export).length) {
             lines.push(`declare module "${this.nodeName}" {`);

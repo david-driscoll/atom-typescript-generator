@@ -62,31 +62,62 @@ export default function(provider: BuilderProvider) {
     });*/
 
     provider.type()
-        .order(-1000)
-        .forProperty(name => _.any(knownClasses, cls => name.name && _.endsWith(getProperName(name.name).toLowerCase(), cls.toLowerCase())))
+        .order(-900)
+        .forProperty(property => _.any(knownClasses, cls => property.name && _.endsWith(getProperName(property.name).toLowerCase(), cls.toLowerCase())))
         .compute(function({cls, property, type}) {
+
         var propertyName = property && property.name.toLowerCase();
-        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
+
+        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(property.name).toLowerCase(), kc.name.toLowerCase()));
         if (!targetClass)
             return null;
-        if (targetClass.project == cls.project)
-            return (getProperName(property.name) !== property.name) ? targetClass.name + '[]' : targetClass.name;
-        return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
+
+        if (targetClass.project == cls.project) {
+            if (getProperName(property.name) !== property.name) {
+                return targetClass.name + '[]';
+            } else {
+                return targetClass.name;
+            }
+        } else {
+            if (getProperName(property.name) !== property.name) {
+                return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
+            } else {
+                return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}`;
+            }
+        }
     });
 
     provider.paramType()
-        .order(-1000)
+        .order(-900)
         .forName(name => _.any(knownClasses, cls => name && _.endsWith(getProperName(name).toLowerCase(), cls.toLowerCase())))
         .compute(function({cls, property, name, index}) {
+
         if (_.endsWith(cls.name, 'View'))
             return null;
+
         var propertyName = name && name.toLowerCase();
-        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
+
+        var targetClass = _.find(classes, kc => name && _.endsWith(getProperName(name).toLowerCase(), kc.name.toLowerCase()));
         if (!targetClass)
             return null;
-        if (targetClass.project == cls.project)
-        return (getProperName(property.name) !== property.name) ? targetClass.name + '[]' : targetClass.name;
-        return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
+
+        if (propertyName && propertyName.indexOf("selection") > -1) {
+            console.log(propertyName, getProperName(property.name), property.name, getProperName(property.name) !== property.name);
+        }
+
+        if (targetClass.project == cls.project) {
+            if (getProperName(name) !== name) {
+                return targetClass.name + '[]';
+            } else {
+                return targetClass.name;
+            }
+        } else {
+            if (getProperName(name) !== name) {
+                return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
+            } else {
+                return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}`;
+            }
+        }
     });
 
     provider.type()
@@ -113,7 +144,7 @@ export default function(provider: BuilderProvider) {
 
     provider.type()
         .order(-1000)
-        .forProperty(name => _.any(["display", "deactivate", "activate", "destroy", "reset", "increase", "decrease", "move", "set", "update", "emitDid", 'save', 'undo', 'redo', "delete", "backspace", "store", 'start', 'unload', 'remove', 'send', 'add', 'kill', 'open', 'run', "restore", 'minimize', 'focus', 'close', 'reload'], z => _.startsWith(name.name, z)))
+        .forProperty(name => _.any(["display", "deactivate", "activate", "destroy", "reset", "increase", "decrease", "move", "set", "update", "emitDid", 'save', 'undo', 'redo', "delete", "backspace", "store", 'start', 'unload', 'remove', 'send', 'add', 'kill', 'open', 'run', "restore", 'minimize', 'focus', 'close', 'reload', 'handle', 'emit', 'clear'], z => _.startsWith(name.name, z)))
         .return("void");
 
     provider.type()
@@ -173,12 +204,12 @@ export default function(provider: BuilderProvider) {
 
     provider.type()
         .order(-990)
-        .forPropertyName(name => _.any(['pid', 'version'], z => _.contains(name.toLowerCase(), z)))
+        .forPropertyName(name => _.any(['pid', 'version', 'vertical', 'horizontal', 'width', 'height'], z => _.contains(name.toLowerCase(), z)))
         .return('number');
 
     provider.type()
         .order(-990)
-        .forPropertyName(name => _.any(['column', 'row', 'line'], z => _.endsWith(name.toLowerCase(), z)))
+        .forPropertyName(name => _.any(['column', 'row', 'line', 'vertical', 'horizontal', 'width', 'height', 'count', 'length'], z => _.endsWith(name.toLowerCase(), z)))
         .return('number');
 
     provider.paramName()
@@ -190,6 +221,33 @@ export default function(provider: BuilderProvider) {
     provider.remapType(true)
         .forType(z => z === "void")
         .return("any");
+
+    provider.paramType()
+        .forProject(x => x !== "scoped-property-store")
+        .forName("selector")
+        .return("string");
+
+    provider.type()
+        .forProject(x => x !== "scoped-property-store")
+        .forProperty(z => z.name === "selector")
+        .return("string");
+
+    provider
+        .remapType()
+        .compute(function({cls, property, type}) {
+        if (_.startsWith(property.name, "observe") || _.startsWith(property.name, "onDid")) {
+            if (!_.startsWith(type, "Function") && !_.startsWith(type, "(")) {
+                var t = type.split('.');
+                var name = _.trimRight(t[t.length-1].toLowerCase(), '[]');
+                if (name == "package")
+                name = "pack";
+                return `(${name}: ${type}) => void`;
+            }
+        }
+        return type;
+    })
+
+
 };
 
 /*

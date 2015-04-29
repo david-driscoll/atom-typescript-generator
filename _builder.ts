@@ -6,15 +6,25 @@ class Builder {
 
     public predicateFor(key: string, value: string | Function) {
         if (typeof value === 'function') {
-            this.predicates.push((obj) => _.has(obj, key) && value(obj[key]));
+            this.predicates.push((obj) => {
+                if (_.isString(obj[key])) {
+                    return _.has(obj, key) && value(obj[key].trim())
+                }
+                return _.has(obj, key) && value(obj[key])
+            });
         } else {
-            this.predicates.push((obj) => _.has(obj, key) && obj[key] === value);
+            this.predicates.push((obj) => {
+                if (_.isString(obj[key])) {
+                    return _.has(obj, key) && obj[key].trim() === value;
+                }
+                return _.has(obj, key) && obj[key] === value;
+            });
         }
         this.values.push(value.toString());
     }
 
     private predicateForName(key: string, value: string) {
-        this.predicates.push((obj) => _.has(obj, key) && obj[key]['name'] === value);
+        this.predicates.push((obj) => obj[key] && obj[key]['name'] && obj[key]['name'].trim() === value);
         this.values.push(value.toString());
     }
 
@@ -31,10 +41,10 @@ class Builder {
     //public forClass(value: (cls: IClass) => any): Builder;
     public forProject(value: string|Function): Builder {
         if (typeof value === 'function') {
-            this.predicates.push((obj) => _.has(obj, 'cls') && obj['cls'] && value(obj['cls']['project']));
+            this.predicates.push((obj) => _.has(obj, 'cls') && obj['cls'] && value(obj['cls']['project'].trim()));
         } else {
             this.predicates.push((obj) => {
-                return _.has(obj, 'cls') && obj['cls'] && obj['cls']['project'] === value;
+                return _.has(obj, 'cls') && obj['cls'] && obj['cls']['project'].trim() === value;
             })
         }
         this.values.push(value.toString());
@@ -56,13 +66,13 @@ class Builder {
         if (typeof value === 'function') {
             this.predicates.push((obj) => {
                 if (_.has(obj, 'property') && obj['property']) {
-                    return value(obj['property']['name'] || '');
+                    return value(obj['property']['name'].trim() || '');
                 }
             });
         } else {
             this.predicates.push((obj) => {
-                if (_.has(obj, 'property') && obj['property']) {
-                    return obj['property']['name'] === value;
+                if (obj['property'] && obj['property']['name']) {
+                    return obj['property']['name'].trim() === value;
                 }
             })
         }
@@ -101,13 +111,21 @@ class Builder {
     public return(result: any|Function) {
         if (typeof result === 'function')
             return (obj) => {
+                if (obj.cls.name && obj.property.name && obj.type && obj.type=== "TextBuffer.Point")
+                    console.log('func', obj.cls.name, obj.property.name, this.predicates.length, result(obj), result.toString());
+
                 if (!this.predicates.length)
-                    return result(obj)
+                    return result(obj);
+
                 return _.all(this.predicates, (cb) => !!cb(obj)) && result(obj);
             }
         return (obj) => {
+            if (obj.cls.name && obj.property.name && obj.type && obj.type=== "TextBuffer.Point")
+                console.log('str', obj.cls.name, obj.property.name, this.predicates.length, result);
+
             if (!this.predicates.length)
                 return result;
+
             return _.all(this.predicates, (cb) => !!cb(obj)) && (result);
         }
     }
@@ -234,6 +252,12 @@ class ParameterBuilder {
     public order(order: number) {
         this._order = order;
         return this;
+    }
+
+    public allParamsRequired() {
+        this.return(function({cls, property, name, index}) {
+            return name;
+        });
     }
 }
 
@@ -448,6 +472,10 @@ class IgnorePropertyBuilder {
 export class BuilderProvider {
     constructor(private inference: InferenceMain) {
 
+    }
+
+    public hideClass(name: string) {
+        this.inference.hiddenClasses.push(name);
     }
 
     public type() {

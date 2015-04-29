@@ -10,7 +10,8 @@ var inference: InferenceMain = <any> {
     parameterTypes: [],
     parameterNames: [],
     types: [],
-    remapTypes: []
+    remapTypes: [],
+    hiddenClasses: []
 };
 
 fs.readdirSync('./inference').forEach(file => {
@@ -65,9 +66,11 @@ inference.types.handler = function({cls, property, type}) {
 };
 
 inference.remapTypes.handler = function({cls, property, type, param}) {
-    var remapedType = _(inference.remapTypes).chain().map(z => z({ cls, property, type, param })).filter(z => !!z).value();
-    if (remapedType.length)
-        return remapedType[0];
+    _.each(inference.remapTypes, remap => {
+        var result = remap({ cls, property, type, param });
+        if (result)
+            type = result;
+    });
     return type;
 };
 

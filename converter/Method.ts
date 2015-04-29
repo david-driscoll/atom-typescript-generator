@@ -53,13 +53,13 @@ class MethodConverted implements Converted.IMethod {
             if (this.parameters.length) {
                 _.each(this.parameters, x => {
                     if (x.docText)
-                        x.docText.split('\n').forEach(z => lines.push(z));
+                        x.docText.forEach(z => lines.push(' * ' + z));
                 })
             }
             if (this.returnType.length) {
                 _.each(this.returnType, x => {
                     if (x.docText)
-                        lines.push(x.docText.split('\n').forEach(z => lines.push(z)));
+                        x.docText.forEach(z => lines.push(' * ' + z));
                 });
             } else {
                 // any?
@@ -69,9 +69,9 @@ class MethodConverted implements Converted.IMethod {
 
         if (this.destructured) {
             if (this.name === "constructor") {
-                var field = `${this.name}({ ${this.parameters.map(z => z.emit({ indent: 0 })).join('; ') } });`;
+                var field = `${this.name}({ ${this.parameters.map(x => _.trimRight(x.name, '?')).join(', ')} } : { ${this.parameters.map(z => z.emit({ indent: 0 })).join('; ') } });`;
             } else {
-                var field = `${this.name}({ ${this.parameters.map(z => z.emit({ indent: 0 })).join('; ') } }) : ${_.unique(this.returnType.map(z => z.type)).join(' | ') };`;
+                var field = `${this.name}({ ${this.parameters.map(x => _.trimRight(x.name, '?')).join(', ')} } : { ${this.parameters.map(z => z.emit({ indent: 0 })).join('; ') } }) : ${_.unique(this.returnType.map(z => z.type)).join(' | ') };`;
             }
         } else {
             if (this.name === "constructor") {
@@ -85,13 +85,13 @@ class MethodConverted implements Converted.IMethod {
 
         lines.push(field);
 
-        return lines.map(z => _.repeat(' ', indent) + z).join('\n');
+        return lines.map(z => _.repeat(' ', indent) + z.replace(/ \*  \* /g, ' * ')).join('\n');
     }
 }
 
 export class DocReturnTypeConverted implements Converted.IReturnType {
     public type: string;
-    public docText: string;
+    public docText: string[];
     constructor(cls: IClass, property: IProperty, returnValue: IDocReturn) {
         this.type = inference.types.handler({ cls, property, type: 'any' }) || this._getReturnValue(cls, property, returnValue);
         if (_.startsWith(this.type, Project.getProjectDisplayName(cls.project) + '.')) {
@@ -101,7 +101,7 @@ export class DocReturnTypeConverted implements Converted.IReturnType {
     }
 
     public _getReturnValue(cls: IClass, property: IProperty, returnValue: IDocReturn) {
-        this.docText = returnValue.description;
+        this.docText = returnValue.description.split('\n');
         if (returnValue.type === null)
             return 'any';
 
@@ -122,13 +122,13 @@ export class DocReturnTypeConverted implements Converted.IReturnType {
 
 export class ReturnTypeConverted implements Converted.IReturnType {
     public type: string;
-    public docText: string;
+    public docText: string[];
     constructor(cls: IClass, property: IProperty) {
         this.type = inference.types.handler({ cls, property, type: 'any' }) || 'any';
         if (_.startsWith(this.type, Project.getProjectDisplayName(cls.project) + '.')) {
             this.type = this.type.split('.')[1];
         }
-        this.docText = '';
+        this.docText = [];
         //this.type = inference.remapTypes.handler({ cls, property, type: this.type });
     }
 }

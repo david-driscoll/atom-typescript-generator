@@ -49,7 +49,12 @@ export default function(provider: BuilderProvider) {
 
     provider.remapType(true)
         .forType((type) => type === "TextBuffer.Point")
-        .return("TextBuffer.Point | { row: number; column: number } | [number, number]")
+        .compute(function({cls, property, type}) {
+            console.log(cls.name, property.name, type);
+
+            return "TextBuffer.Point | { row: number; column: number } | [number, number]";
+        })
+        //.return("TextBuffer.Point | { row: number; column: number } | [number, number]")
 
     //TextBuffer.Range
 }
