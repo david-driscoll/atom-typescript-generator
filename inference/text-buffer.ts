@@ -2,21 +2,21 @@ import * as _ from "lodash";
 import {BuilderProvider} from "../_builder";
 export default function(provider: BuilderProvider) {
     provider.type()
-        .order(1000)
+        .order(-999)
         .forPropertyName(name => _.contains(name.toLowerCase(), "ranges") || _.contains(name.toLowerCase(), "ranges?"))
         .return("TextBuffer.Range[]");
 
     provider.type()
-        .order(1000)
+        .order(-999)
         .forPropertyName(name => _.contains(name.toLowerCase(), "range") || _.contains(name.toLowerCase(), "range?"))
         .return("TextBuffer.Range");
     provider.type()
-        .order(1000)
+        .order(-999)
         .forPropertyName(name => _.contains(name.toLowerCase(), "positions") || _.contains(name.toLowerCase(), "positions?"))
         .return("TextBuffer.Point[]");
 
     provider.type()
-        .order(1000)
+        .order(-999)
         .forPropertyName(name => _.contains(name.toLowerCase(), "position") || _.contains(name.toLowerCase(), "position?"))
         .return("TextBuffer.Point");
 

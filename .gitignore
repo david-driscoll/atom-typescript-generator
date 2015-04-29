@@ -5,3 +5,4 @@ server
 typings
 *.js
 metadata.json
+!gulpfile.js

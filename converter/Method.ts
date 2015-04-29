@@ -59,7 +59,7 @@ class MethodConverted implements Converted.IMethod {
             if (this.returnType.length) {
                 _.each(this.returnType, x => {
                     if (x.docText)
-                        lines.push(x.docText);
+                        lines.push(x.docText.split('\n').forEach(z => lines.push(z)));
                 });
             } else {
                 // any?
@@ -67,10 +67,18 @@ class MethodConverted implements Converted.IMethod {
             lines.push(' */');
         }
 
-        if (this.name === "constructor") {
-            var field = `${this.name}(${this.parameters.map(z => z.emit({ indent: 0 })).join(', ') });`;
+        if (this.destructured) {
+            if (this.name === "constructor") {
+                var field = `${this.name}({ ${this.parameters.map(z => z.emit({ indent: 0 })).join('; ') } });`;
+            } else {
+                var field = `${this.name}({ ${this.parameters.map(z => z.emit({ indent: 0 })).join('; ') } }) : ${_.unique(this.returnType.map(z => z.type)).join(' | ') };`;
+            }
         } else {
-            var field = `${this.name}(${this.parameters.map(z => z.emit({ indent: 0 })).join(', ') }) : ${_.unique(this.returnType.map(z => z.type)).join(' | ') };`;
+            if (this.name === "constructor") {
+                var field = `${this.name}(${this.parameters.map(z => z.emit({ indent: 0 })).join(', ') });`;
+            } else {
+                var field = `${this.name}(${this.parameters.map(z => z.emit({ indent: 0 })).join(', ') }) : ${_.unique(this.returnType.map(z => z.type)).join(' | ') };`;
+            }
         }
         if (this.isStatic)
             field = 'static ' + field;

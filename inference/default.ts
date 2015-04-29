@@ -24,16 +24,7 @@ export default function(provider: BuilderProvider) {
         return name;
     }
 
-    function endsWithS(name: string, clsName: string) {
-        if (_.endsWith(name, 'ies')) {
-            _.endsWith(getProperName(name).toLowerCase().replace(/ies$/, 'y')
-        } else {
-            return _.endsWith(name.toLowerCase(), clsName.toLowerCase() + 's')
-        }
-
-    }
-
-    provider.type()
+    /*provider.type()
         .order(-1000)
         .forPropertyName(name => _.any(knownClasses, cls => name && _.endsWith(name.toLowerCase(), cls.toLowerCase())))
         .compute(function({cls, property, type}) {
@@ -41,26 +32,14 @@ export default function(provider: BuilderProvider) {
         var targetClass = _.find(classes, kc => _.endsWith(propertyName, kc.name.toLowerCase()));
         if (!targetClass)
             return null;
+        if (_.any(["deactivate", "activate", "destroy", "reset", "increase", "decrease", "move", "set", "update", "emitDid", 'save', 'undo', 'redo', "delete", "backspace"], z => _.startsWith(property.name, z)))
+            return null;
+        console.log(propertyName);
         //if (_.any(['Selector', 'Scanner', 'Grammar', 'Config'], z => z === targetClass.name))
         //    return null;
         if (targetClass.project == cls.project)
             return targetClass.name;
         return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}`;
-    });
-
-    provider.type()
-        .order(-1000)
-        .forPropertyName(name => _.any(knownClasses, cls => name && _.endsWith(getProperName(name).toLowerCase(), cls.toLowerCase())))
-        .compute(function({cls, property, type}) {
-        var propertyName = property && property.name.toLowerCase();
-        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
-        if (!targetClass)
-            return null;
-        //if (_.any(['Selector', 'Scanner', 'Grammar', 'Config'], z => z === targetClass.name))
-        //    return null;
-        if (targetClass.project == cls.project)
-            return targetClass.name + '[]';
-        return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
     });
 
     provider.paramType()
@@ -73,11 +52,26 @@ export default function(provider: BuilderProvider) {
         var targetClass = _.find(classes, kc => _.endsWith(propertyName, kc.name.toLowerCase()));
         if (!targetClass)
             return null;
+        if (_.any(["deactivate", "activate", "destroy", "reset", "increase", "decrease", "move", "set", "update", "emitDid", 'save', 'undo', 'redo', "delete", "backspace"], z => _.startsWith(property.name, z)))
+            return null;
         //if (_.any(['Selector', 'Scanner', 'Grammar', 'Config'], z => z === targetClass.name))
         //    return null;
         if (targetClass.project == cls.project)
             return targetClass.name;
         return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}`;
+    });*/
+
+    provider.type()
+        .order(-1000)
+        .forProperty(name => _.any(knownClasses, cls => name.name && _.endsWith(getProperName(name.name).toLowerCase(), cls.toLowerCase())))
+        .compute(function({cls, property, type}) {
+        var propertyName = property && property.name.toLowerCase();
+        var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
+        if (!targetClass)
+            return null;
+        if (targetClass.project == cls.project)
+            return (getProperName(property.name) !== property.name) ? targetClass.name + '[]' : targetClass.name;
+        return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
     });
 
     provider.paramType()
@@ -90,12 +84,19 @@ export default function(provider: BuilderProvider) {
         var targetClass = _.find(classes, kc => property.name && _.endsWith(getProperName(propertyName), kc.name.toLowerCase()));
         if (!targetClass)
             return null;
-        //if (_.any(['Selector', 'Scanner', 'Grammar', 'Config'], z => z === targetClass.name))
-        //    return null;
         if (targetClass.project == cls.project)
-            return targetClass.name + '[]';
+        return (getProperName(property.name) !== property.name) ? targetClass.name + '[]' : targetClass.name;
         return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}[]`;
     });
+
+    provider.type()
+        .forPropertyName(x => _.startsWith(x, "get") && _.endsWith(x, "Path"))
+        .return("string");
+
+    provider.type()
+        .forPropertyName(x => _.startsWith(x, "get") && _.endsWith(x, "Paths"))
+        .return("string[]");
+
 
     provider.type()
         .order(-1000)
@@ -111,22 +112,22 @@ export default function(provider: BuilderProvider) {
         .return("Q.Promise<Package>");
 
     provider.type()
-        .order(-999)
-        .forPropertyName(name => _.any(["deactivate", "activate", "destroy", "reset", "increase", "decrease", "move", "set", "update", "emitDid", 'save', 'undo', 'redo', "delete", "backspace"], z => _.startsWith(name, z)))
+        .order(-1000)
+        .forProperty(name => _.any(["display", "deactivate", "activate", "destroy", "reset", "increase", "decrease", "move", "set", "update", "emitDid", 'save', 'undo', 'redo', "delete", "backspace", "store", 'start', 'unload', 'remove', 'send', 'add', 'kill', 'open', 'run', "restore", 'minimize', 'focus', 'close', 'reload'], z => _.startsWith(name.name, z)))
         .return("void");
 
     provider.type()
-        .order(-999)
-        .forPropertyName(name => _.any(["is", "should", 'use'], z => _.startsWith(name, z)))
+        .order(-990)
+        .forProperty(p => _.any(["is", "should", 'use', "in"], z => _.startsWith(p.name, z)))
         .return("boolean");
 
     provider.type()
-        .order(-999)
-        .forPropertyName(name => _.any(["editor"], z => name === z))
+        .order(-990)
+        .forProperty(p => _.any(["editor"], z => p.name === z))
         .return("Atom.TextEditor");
 
     provider.type()
-        .order(-999)
+        .order(-990)
         .forPropertyName(name => _.startsWith(name, 'build') && _.endsWith(name.toLowerCase(), 'html'))
         .return("string");
 
@@ -141,24 +142,43 @@ export default function(provider: BuilderProvider) {
         .forPropertyName(name => _.any(['onDid', 'observe', 'onWill'], z => _.startsWith(name, z)))
         .return("EventKit.Disposable");
 
+    provider.paramName()
+        .forProperty(p => _.any(['onDid', 'observe', 'onWill'], z => _.startsWith(p.name, z)))
+        .forName("callback")
+        .return("callback");
+
     provider.type()
-        .order(-1000)
+        .order(-990)
         .forPropertyName(name => _.any(['visible', 'mini'], z => _.contains(name.toLowerCase(), z)))
         .return("boolean");
 
     provider.type()
-        .order(-1000)
-        .forPropertyName(name => _.any(['name', 'encoding', 'text', 'text?', 'geturi'], z => _.contains(name.toLowerCase(), z)))
+        .order(-990)
+        .forPropertyName(name => _.any(['pid'], z => _.contains(name.toLowerCase(), z)))
+        .return("number");
+
+    provider.paramType()
+        .forName(name => _.any(['devmode', 'safemode', 'apipreviewmode', 'newwindow', 'exitwhendone', 'logfile'], z => name.toLowerCase() === z.toLowerCase()))
+        .return("boolean");
+
+    provider.type()
+        .order(-990)
+        .forPropertyName(name => _.any(['name', 'encoding', 'text', 'text?', 'geturi', 'url', 'path', 'specdirectory', 'command', 'message'], z => _.contains(name.toLowerCase(), z.toLowerCase())))
         .return("string");
 
     provider.type()
-        .order(-1000)
-        .forPropertyName(name => _.any(['columns', 'rows'], z => _.endsWith(name.toLowerCase(), z)))
+        .order(-990)
+        .forPropertyName(name => _.any(['columns', 'rows', 'lines'], z => _.endsWith(name.toLowerCase(), z)))
         .return('number[]');
 
     provider.type()
-        .order(-1000)
-        .forPropertyName(name => _.any(['column', 'row'], z => _.endsWith(name.toLowerCase(), z)))
+        .order(-990)
+        .forPropertyName(name => _.any(['pid', 'version'], z => _.contains(name.toLowerCase(), z)))
+        .return('number');
+
+    provider.type()
+        .order(-990)
+        .forPropertyName(name => _.any(['column', 'row', 'line'], z => _.endsWith(name.toLowerCase(), z)))
         .return('number');
 
     provider.paramName()
@@ -166,6 +186,10 @@ export default function(provider: BuilderProvider) {
         .compute(function({cls, property, name, index}) {
         return ((property.paramNames && property.paramNames[index]) || name) + '?'
     });
+
+    provider.remapType(true)
+        .forType(z => z === "void")
+        .return("any");
 };
 
 /*

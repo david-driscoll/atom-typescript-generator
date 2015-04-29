@@ -1,5 +1,5 @@
 export default  {
-    content: { "atom.Atom": ['emitter: EventKit.Emitter;'] },
+    content: { "atom.Atom": ['emitter: EventKit.Emitter;', 'interface MenuItem { label:string; accelerator:string; metadata: any, submenu: MenuItem[], click: () => void }'] },
     imports: {
         "atom": ['node-pathwatcher']
     },
