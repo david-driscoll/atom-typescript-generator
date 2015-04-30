@@ -1,4 +1,4 @@
-// Type definitions for scandal (v2.0.3)
+// Type definitions for scandal (v2.0.0)
 // Project: https://github.com/atom/scandal
 // Definitions by: david-driscoll <https://github.com/david-driscoll/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -172,18 +172,18 @@ declare module Scandal {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isPathAccepted(fileOrDirectory? : Pathwatcher.Directory, filepath? : boolean) : boolean;
+        isPathAccepted(fileOrDirectory? : Pathwatcher.Directory, filepath? : string) : string;
     
         /**
          * Private Methods
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isPathIgnored(fileOrDirectory? : Pathwatcher.Directory, filepath? : boolean) : boolean;
+        isPathIgnored(fileOrDirectory? : Pathwatcher.Directory, filepath? : string) : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isPathIncluded(fileOrDirectory? : Pathwatcher.Directory, filepath? : boolean) : boolean;
+        isPathIncluded(fileOrDirectory? : Pathwatcher.Directory, filepath? : string) : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -194,65 +194,6 @@ declare module Scandal {
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         createMatchers(patterns? : FirstMate.Pattern[], deepMatch? : any) : any;
-    
-    }
-
-    /**
-     * ReplaceTransformer
-     * This class was not documented by atomdoc, assume it is private. Use with caution.
-     */
-    class ReplaceTransformer /*extends .Transform*/ {
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        regex: any /* default */;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        replacementText: string;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        dryReplace: any /* default */;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        constructor(regex? : any, replacementText? : string, options? : (dryReplace? : any) => any);
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        _transform(chunk? : any, encoding? : string, done? : any) : any;
-    
-    }
-
-    /**
-     * PathReplacer
-     * This class was not documented by atomdoc, assume it is private. Use with caution.
-     */
-    class PathReplacer /*extends NodeJS.EventEmitter*/ {
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        dryReplace: any /* default */;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        constructor({ dryReplace } : { dryReplace? : any });
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        replacePaths(regex? : any, replacementText? : string, paths? : string, doneCallback? : any) : string;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        replacePath(regex? : any, replacementText? : string, filePath? : string, doneCallback? : any) : string;
     
     }
 
@@ -296,17 +237,12 @@ declare module Scandal {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        processFile(filePath? : Pathwatcher.File) : Pathwatcher.File;
+        processFile(filePath? : string) : Pathwatcher.File;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         stat(filePath? : string) : any;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        isInternalSymlink(filePath? : boolean) : boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.

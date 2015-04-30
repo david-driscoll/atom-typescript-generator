@@ -162,7 +162,7 @@ declare module ScopedPropertyStore {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        static parsePseudoSelectors(selectorComponent? : Selector[]) : Selector[];
+        static parsePseudoSelectors(selectorComponent? : any) : Selector[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -182,7 +182,7 @@ declare module ScopedPropertyStore {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        selectorComponentMatchesScope(selectorComponent? : Atom.Scope, scope? : Atom.Scope) : Atom.Scope;
+        selectorComponentMatchesScope(selectorComponent? : any, scope? : Atom.Scope) : Atom.Scope;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.

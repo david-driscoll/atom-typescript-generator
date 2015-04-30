@@ -1,5 +1,8 @@
 export default {
-    content: { "first-mate.Grammar": ['name: string;'] },
+    content: {
+        "first-mate.Grammar": ['name: string;'],
+        "FirstMate.Grammar": ['name: string;']
+    },
     moduleContent: {
         "first-mate": [
             'class ScopeSelector extends FirstMate.ScopeSelector {}',

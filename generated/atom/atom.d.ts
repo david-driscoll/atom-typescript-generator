@@ -1,4 +1,4 @@
-// Type definitions for Atom (v0.193.0)
+// Type definitions for Atom (v0.191.0)
 // Project: https://atom.io/
 // Definitions by: vvakame <https://github.com/vvakame/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -39,10 +39,8 @@ declare module Atom {
         /**
          * 
          * This field or method was marked private by atomdoc. Use with caution.
-         * Returns the path where the state for the current window will be
-         * located if it exists.
          */
-        static getStateKey(paths? : string, mode? : any) : any;
+        static getStatePath(paths? : string, mode? : any) : string;
     
         /**
          * Get the directory path to Atom's configuration area.
@@ -51,9 +49,10 @@ declare module Atom {
         static getConfigDirPath() : string;
     
         /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         * Get the path to Atom's storage directory.
+         * This field or method was marked private by atomdoc. Use with caution.
          */
-        static getStorageFolder() : StorageFolder;
+        static getStorageDirPath() : string;
     
         /**
          * 
@@ -204,7 +203,7 @@ declare module Atom {
         /**
          * Determine whether the current version is an official release. 
          */
-        isReleasedVersion() : boolean;
+        isReleasedVersion() : number;
     
         /**
          * Get the directory path to Atom's configuration area.
@@ -688,7 +687,8 @@ declare module Atom {
         constructor(options? : any);
     
         /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         * Opens a new window based on the options provided. 
+         * This field or method was marked private by atomdoc. Use with caution.
          */
         openWithOptions({ pathsToOpen, urlsToOpen, test, pidToKillWhenClosed, devMode, safeMode, apiPreviewMode, newWindow, specDirectory, logFile } : { pathsToOpen? : string; urlsToOpen? : string; test? : any; pidToKillWhenClosed? : number; devMode? : boolean; safeMode? : boolean; apiPreviewMode? : boolean; newWindow? : boolean; specDirectory? : Pathwatcher.Directory; logFile? : boolean }) : void;
     
@@ -782,7 +782,7 @@ declare module Atom {
         focusedWindow() : void;
     
         /**
-         * Opens a single path, in an existing window if possible.
+         * Opens multiple paths, in existing windows if possible.
          * 
          * options -
          *   :pathToOpen - The file path to open
@@ -796,7 +796,7 @@ declare module Atom {
         openPath({ pathToOpen, pidToKillWhenClosed, newWindow, devMode, safeMode, apiPreviewMode, window } : { pathToOpen? : string; pidToKillWhenClosed? : number; newWindow? : boolean; devMode? : boolean; safeMode? : boolean; apiPreviewMode? : boolean; window? : AtomWindow }) : string;
     
         /**
-         * Opens multiple paths, in existing windows if possible.
+         * Opens a single path, in an existing window if possible.
          * 
          * options -
          *   :pathsToOpen - The array of file paths to open
@@ -827,16 +827,6 @@ declare module Atom {
          * This field or method was marked private by atomdoc. Use with caution.
          */
         killProcess(pid? : number) : void;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        saveState() : void;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        loadState() : any;
     
         /**
          * Open an atom:// url.
@@ -1244,7 +1234,7 @@ declare module Atom {
          * @param onLines? - The callback to call with each line of data.
          * @param onDone? - The callback to call when the stream has closed. 
          */
-        bufferStream(stream? : any, onLines? : number[], onDone? : any) : any;
+        bufferStream(stream? : any, onLines? : string[], onDone? : any) : any;
     
         /**
          * Kill all child processes of the spawned cmd.exe process on Windows.
@@ -1263,7 +1253,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isExplorerCommand(command? : boolean) : boolean;
+        isExplorerCommand(command? : string) : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -1385,12 +1375,12 @@ declare module Atom {
         /**
          * Add one or more command listeners associated with a selector.
          */
-        add(target : string | JQuery | Node, commandName : string, callback : (event: Event) => any) : void;
+        add(target : string | JQuery | Node | SpacePen.View, commandName : string, callback : (event: Event) => any) : EventKit.Disposable;
     
         /**
          * Find all registered commands matching a query.
          */
-        findCommands({ target } : { target : Node }) : string;
+        findCommands({ target } : { target : string | JQuery | Node | SpacePen.View }) : string;
     
         /**
          * Simulate the dispatch of a command on a DOM node.
@@ -1402,7 +1392,7 @@ declare module Atom {
          * @param target - The DOM node at which to start bubbling the command event.
          * @param commandName - {String} indicating the name of the command to dispatch. 
          */
-        dispatch(target : Node, commandName : string, detail? : any) : any;
+        dispatch(target : string | JQuery | Node | SpacePen.View, commandName : string, detail? : any) : any;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -1420,7 +1410,7 @@ declare module Atom {
         restoreSnapshot(snapshot : (InlineListener | SelectorBasedListener)[]) : void;
     
     
-        add(target : string | JQuery | Node, commands: { [commandName: string]: (event: Event) => void })
+        add(target : string | JQuery | Node, commands: { [commandName: string]: (event: Event) => void }): EventKit.Disposable
     }
 
     /**
@@ -1532,7 +1522,7 @@ declare module Atom {
          * Add context menu items scoped by CSS selectors.
          * @param itemsBySelector - An {Object} whose keys are CSS selectors and whose values are {Array}s of item {Object}s containing the following keys:
          */
-        add(itemsBySelector : ContextMenuItem) : void;
+        add(itemsBySelector : ContextMenuItem) : EventKit.Disposable;
     
     }
 
@@ -1631,9 +1621,9 @@ declare module Atom {
     
         getCurrentBufferLine() : number;
     
-        isAtBeginningOfLine() : boolean;
+        isAtBeginningOfLine() : number;
     
-        isAtEndOfLine() : boolean;
+        isAtEndOfLine() : number;
     
         getMarker() : Marker;
     
@@ -1890,7 +1880,7 @@ declare module Atom {
         /**
          * Register the given class(es) as deserializers.
          */
-        add(deserializers? : any) : void;
+        add(deserializers? : any) : EventKit.Disposable;
     
         /**
          * Deserialize the state and params.
@@ -1971,7 +1961,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        updateAllScreenLines() : number[];
+        updateAllScreenLines() : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -1981,7 +1971,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeGrammar(callback : (grammar: FirstMate.Grammar) => void) : FirstMate.Grammar;
+        onDidChangeGrammar(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -1996,7 +1986,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeCharacterWidths(callback : Function /* needs to be defined */) : number;
+        onDidChangeCharacterWidths(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2021,27 +2011,27 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeDecorations(callback : (decoration: Decoration[]) => void) : Decoration[];
+        observeDecorations(callback : (any: any) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidAddDecoration(callback : (decoration: Decoration) => void) : Decoration;
+        onDidAddDecoration(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidRemoveDecoration(callback : (decoration: Decoration) => void) : Decoration;
+        onDidRemoveDecoration(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidCreateMarker(callback : (marker: Marker) => void) : Marker;
+        onDidCreateMarker(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidUpdateMarkers(callback : (marker: Marker[]) => void) : Marker[];
+        onDidUpdateMarkers(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2051,7 +2041,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        updateWrappedScreenLines() : number[];
+        updateWrappedScreenLines() : string[];
     
         /**
          * Sets the visibility of the tokenized buffer.
@@ -2275,17 +2265,17 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        intersectsVisibleRowRange(startRow? : Range, endRow? : Range) : Range;
+        intersectsVisibleRowRange(startRow? : number, endRow? : number) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        selectionIntersectsVisibleRowRange(selection? : Range) : Range;
+        selectionIntersectsVisibleRowRange(selection? : Selection) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        scrollToScreenRange(screenRange? : Range, options? : Range) : Range;
+        scrollToScreenRange(screenRange? : Range, options? : any) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2375,7 +2365,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        indentLevelForLine(line? : boolean) : boolean;
+        indentLevelForLine(line? : number) : number;
     
         /**
          * Given starting and ending screen rows, this returns an array of the
@@ -2394,17 +2384,17 @@ declare module Atom {
          * endRow - The row {Number} to end the fold
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        createFold(startRow? : Fold, endRow? : Fold) : Fold;
+        createFold(startRow? : number, endRow? : number) : Fold;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isFoldedAtBufferRow(bufferRow? : boolean) : boolean;
+        isFoldedAtBufferRow(bufferRow? : number) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isFoldedAtScreenRow(screenRow? : boolean) : boolean;
+        isFoldedAtScreenRow(screenRow? : number) : number;
     
         /**
          * Destroys the fold with the given id 
@@ -2464,7 +2454,7 @@ declare module Atom {
          * 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        outermostFoldsInBufferRowRange(startRow? : Range, endRow? : Range) : Range;
+        outermostFoldsInBufferRowRange(startRow? : number, endRow? : number) : Range;
     
         /**
          * Given a buffer row, this returns folds that include it.
@@ -2500,7 +2490,7 @@ declare module Atom {
          * bufferRange - The {Range} to convert
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        screenRangeForBufferRange(bufferRange? : Range, options? : Range) : Range;
+        screenRangeForBufferRange(bufferRange? : Range, options? : any) : Range;
     
         /**
          * Given a screen range, this converts it into a buffer position.
@@ -2513,7 +2503,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        pixelRangeForScreenRange(screenRange? : Range, clip? : Range) : Range;
+        pixelRangeForScreenRange(screenRange? : Range, clip? : any) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2645,13 +2635,13 @@ declare module Atom {
          * @param range? - The {Range} to clip.
          * @param options? - See {::clipScreenPosition} `options`. Returns a {Range}. 
          */
-        clipScreenRange(range? : Range, options? : Range) : Range;
+        clipScreenRange(range? : Range, options? : TextBuffer.Range) : Range;
     
         /**
          * Calculates a {Range} representing the start of the {TextBuffer} until the end.
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        rangeForAllLines() : number[];
+        rangeForAllLines() : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2661,37 +2651,37 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getDecorations(propertyFilter? : any) : Decoration[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getLineDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getLineDecorations(propertyFilter? : any) : Decoration[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getLineNumberDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getLineNumberDecorations(propertyFilter? : any) : Decoration[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getHighlightDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getHighlightDecorations(propertyFilter? : any) : Decoration[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getOverlayDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getOverlayDecorations(propertyFilter? : any) : Decoration[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        decorationsForScreenRowRange(startScreenRow? : Range, endScreenRow? : Range) : Range;
+        decorationsForScreenRowRange(startScreenRow? : number, endScreenRow? : number) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        decorateMarker(marker? : Marker, decorationParams? : Marker) : Marker;
+        decorateMarker(marker? : Marker, decorationParams? : any) : Marker;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2704,7 +2694,7 @@ declare module Atom {
          * id - A {Number} representing a marker id
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        getMarker(id? : Marker) : Marker;
+        getMarker(id? : any) : Marker;
     
         /**
          * Retrieves the active markers in the buffer.
@@ -2754,7 +2744,7 @@ declare module Atom {
          * 
          * id - The {Number} of the ID to remove 
          */
-        destroyMarker(id? : Marker) : Marker;
+        destroyMarker(id? : any) : Marker;
     
         /**
          * Finds the first marker satisfying the given attributes
@@ -2762,7 +2752,7 @@ declare module Atom {
          * Refer to {DisplayBuffer::findMarkers} for details.
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        findMarker(params? : Marker) : Marker;
+        findMarker(params? : any) : Marker;
     
         /**
          * Find all markers satisfying a set of parameters.
@@ -2782,7 +2772,7 @@ declare module Atom {
          *   :containedInBufferRange - A {Range} or range-compatible {Array}. Only
          *     returns markers contained within this range.
          */
-        findMarkers(params? : Marker[]) : Marker[];
+        findMarkers(params? : any) : Marker[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2792,12 +2782,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        findFoldMarker(attributes? : Marker) : Marker;
+        findFoldMarker(attributes? : any) : Marker;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        findFoldMarkers(attributes? : Marker[]) : Marker[];
+        findFoldMarkers(attributes? : any) : Marker[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2827,7 +2817,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        logLines(start? : any, end? : any) : number[];
+        logLines(start? : any, end? : any) : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2842,17 +2832,17 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        updateScreenLines(startBufferRow? : number, endBufferRow? : number, bufferDelta? : any, options? : any) : number[];
+        updateScreenLines(startBufferRow? : number, endBufferRow? : number, bufferDelta? : any, options? : any) : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildScreenLines(startBufferRow? : number, endBufferRow? : number) : number[];
+        buildScreenLines(startBufferRow? : number, endBufferRow? : number) : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        findMaxLineLength(startScreenRow? : number, endScreenRow? : number, newScreenLines? : number[], screenDelta? : any) : number;
+        findMaxLineLength(startScreenRow? : number, endScreenRow? : number, newScreenLines? : string[], screenDelta? : any) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -2924,7 +2914,7 @@ declare module Atom {
          * includeNewline - A {Boolean} which, if `true`, includes the trailing newline
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        getBufferRange({ includeNewline } : { includeNewline? : Range }) : Range;
+        getBufferRange({ includeNewline } : { includeNewline? : number }) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -3126,14 +3116,14 @@ declare module Atom {
     
         getReferenceTarget(reference? : string, path? : string) : string;
     
-        isPathModified(path? : boolean) : boolean;
+        isPathModified(path? : string) : string;
     
-        isPathNew(path? : boolean) : boolean;
+        isPathNew(path? : string) : string;
     
         /**
          * Is the given path ignored?
          */
-        isPathIgnored(path? : boolean) : boolean;
+        isPathIgnored(path? : string) : string;
     
         /**
          * Get the status of a directory in the repository's working directory.
@@ -3266,7 +3256,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createToken(value? : Token, scopes? : Token) : Token;
+        createToken(value? : any, scopes? : Scope[]) : Token;
     
         /**
          * Select a grammar for the given file path and file contents.
@@ -3539,18 +3529,18 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isFoldableAtBufferRow(bufferRow? : boolean) : boolean;
+        isFoldableAtBufferRow(bufferRow? : number) : number;
     
         /**
          * 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isLineCommentedAtBufferRow(bufferRow? : boolean) : boolean;
+        isLineCommentedAtBufferRow(bufferRow? : number) : number;
     
         /**
-         * Find a row range for a 'paragraph' around specified bufferRow. A paragraph
-         * is a block of text bounded by and empty line or a block of text that is not
-         * the same type (comments next to source code). 
+         * Find a row range for a 'paragraph' around specified bufferRow.
+         * Right now, a paragraph is a block of text bounded by and empty line or a
+         * block of text that is not the same type (comments next to source code). 
          * This field or method was marked private by atomdoc. Use with caution.
          */
         rowRangeForParagraphAtBufferRow(bufferRow? : number) : number;
@@ -3582,7 +3572,7 @@ declare module Atom {
          * endRow - The row {Number} to end at
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        minIndentLevelForRowRange(startRow? : Range, endRow? : Range) : Range;
+        minIndentLevelForRowRange(startRow? : number, endRow? : number) : Range;
     
         /**
          * Indents all the rows between two buffer row numbers.
@@ -3630,11 +3620,6 @@ declare module Atom {
          */
         foldEndRegexForScopeDescriptor(scopeDescriptor? : ScopeDescriptor) : ScopeDescriptor;
     
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        commentStartAndEndStringsForScope(scope? : Scope) : Scope;
-    
     }
 
     /**
@@ -3664,7 +3649,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        cssForFile(stylesheetPath? : Pathwatcher.File, lessContent? : Pathwatcher.File) : Pathwatcher.File;
+        cssForFile(stylesheetPath? : string, lessContent? : any) : Pathwatcher.File;
     
     }
 
@@ -3746,12 +3731,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        popScope(scopeStack? : Scope) : Scope;
+        popScope(scopeStack? : any) : Scope;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        pushScope(scopeStack? : Scope, scope? : Scope) : Scope;
+        pushScope(scopeStack? : any, scope? : Scope) : Scope;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -3776,7 +3761,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        measureCharactersInNewLines() : number[];
+        measureCharactersInNewLines() : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -3835,7 +3820,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        wasValid: any /* default */;
+        wasValid: boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -3920,7 +3905,7 @@ declare module Atom {
          * @param bufferRange? - The new {Range} to use
          * @param properties? - {Object} properties to associate with the marker.
          */
-        setBufferRange(bufferRange? : Range, properties? : Range) : Range;
+        setBufferRange(bufferRange? : Range, properties? : any) : Range;
     
         /**
          * Gets the screen range of the display marker.
@@ -3931,7 +3916,7 @@ declare module Atom {
          * Modifies the screen range of the display marker.
          * @param screenRange? - The new {Range} to use
          */
-        setScreenRange(screenRange? : Range, options? : Range) : Range;
+        setScreenRange(screenRange? : Range, options? : any) : Range;
     
         /**
          * Retrieves the buffer position of the marker's start. This will always be
@@ -4062,7 +4047,7 @@ declare module Atom {
          * Adds the given items to the application menu.
          * @param items? - An {Array} of menu item {Object}s containing the keys:
          */
-        add(items? : MenuItem) : void;
+        add(items? : MenuItem) : EventKit.Disposable;
     
         /**
          * Refreshes the currently visible menu. 
@@ -4143,38 +4128,38 @@ declare module Atom {
          * Events
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        onDidAddNotification(callback : (notification: Notification) => void) : Notification;
+        onDidAddNotification(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Adding Notifications
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        addSuccess(message? : string, options? : any) : void;
+        addSuccess(message : string, options? : { detail?: string; icon?: string; dismissable?: boolean; }) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addInfo(message? : string, options? : any) : void;
+        addInfo(message : string, options? : { detail?: string; icon?: string; dismissable?: boolean; }) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addWarning(message? : string, options? : any) : void;
+        addWarning(message : string, options? : { detail?: string; icon?: string; dismissable?: boolean; }) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addError(message? : string, options? : any) : void;
+        addError(message : string, options? : { detail?: string; icon?: string; dismissable?: boolean; }) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addFatalError(message? : string, options? : any) : void;
+        addFatalError(message : string, options? : { detail?: string; icon?: string; dismissable?: boolean; }) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        add(type? : any, message? : string, options? : any) : void;
+        add(type : Notification, message : string, options? : { detail?: string; icon?: string; dismissable?: boolean; }) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4212,7 +4197,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        options: any /* default */;
+        options: { detail?: string; icon?: string; dismissable?: boolean; };
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4222,22 +4207,22 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidDismiss(callback : Function /* needs to be defined */) : EventKit.Disposable;
+        onDidDismiss(callback : (notification: Notification) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidDisplay(callback : Function /* needs to be defined */) : EventKit.Disposable;
+        onDidDisplay(callback : (notification: Notification) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getOptions() : any;
+        getOptions() : { detail?: string; icon?: string; dismissable?: boolean; };
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getType() : any;
+        getType() : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4247,22 +4232,22 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getTimestamp() : any;
+        getTimestamp() : Date;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getDetail() : any;
+        getDetail() : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isEqual(other? : boolean) : boolean;
+        isEqual(other? : Notification) : Notification;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        dismiss() : any;
+        dismiss() : void;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4277,17 +4262,64 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        wasDisplayed() : any;
+        wasDisplayed() : boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        setDisplayed(displayed? : any) : void;
+        setDisplayed(displayed? : boolean) : void;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         getIcon() : any;
+    
+    }
+
+    /**
+     * OverlayManager
+     * This class was not documented by atomdoc, assume it is private. Use with caution.
+     */
+    class OverlayManager {
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        presenter: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        container: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        constructor(presenter? : any, container? : any);
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        render(state? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        shouldUpdateOverlay(decorationId? : boolean, overlay? : boolean) : boolean;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        measureOverlays() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        measureOverlay(decorationId? : any, itemView? : SpacePen.View) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        renderOverlay(state? : any, decorationId? : any, options? : (item? : any,pixelPosition? : TextBuffer.Point | { row: number; column: number } | [number, number]) => any) : any;
     
     }
 
@@ -4314,37 +4346,37 @@ declare module Atom {
          * Invoke the given callback when all packages have been loaded.
          * @param callback - {Function}
          */
-        onDidLoadInitialPackages(callback : (pack: Package[]) => void) : Package[];
+        onDidLoadInitialPackages(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when all packages have been activated.
          * @param callback - {Function}
          */
-        onDidActivateInitialPackages(callback : (pack: Package[]) => void) : Package[];
+        onDidActivateInitialPackages(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a package is activated.
          * @param callback - A {Function} to be invoked when a package is activated.
          */
-        onDidActivatePackage(callback : (pack: Package) => void) : Package;
+        onDidActivatePackage(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a package is deactivated.
          * @param callback - A {Function} to be invoked when a package is deactivated.
          */
-        onDidDeactivatePackage(callback : (pack: Package) => void) : Q.Promise<Package>;
+        onDidDeactivatePackage(callback : Function /* needs to be defined */) : Q.Promise<Package>;
     
         /**
          * Invoke the given callback when a package is loaded.
          * @param callback - A {Function} to be invoked when a package is loaded.
          */
-        onDidLoadPackage(callback : (pack: Package) => void) : Package;
+        onDidLoadPackage(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a package is unloaded.
          * @param callback - A {Function} to be invoked when a package is unloaded.
          */
-        onDidUnloadPackage(callback : (pack: Package) => void) : Package;
+        onDidUnloadPackage(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Get the path to the apm command.
@@ -4375,12 +4407,12 @@ declare module Atom {
         /**
          * Enable the package with the given name.
          */
-        enablePackage(name? : Package) : Package;
+        enablePackage(name? : string) : Package;
     
         /**
          * Disable the package with the given name.
          */
-        disablePackage(name? : Package) : Package;
+        disablePackage(name? : string) : Package;
     
         /**
          * Is the package with the given name disabled?
@@ -4473,7 +4505,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeDisabledPackages() : Package[];
+        observeDisabledPackages() : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4483,7 +4515,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        loadPackage(nameOrPath? : Package) : Package;
+        loadPackage(nameOrPath? : string) : Package;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4493,7 +4525,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        unloadPackage(name? : Package) : Package;
+        unloadPackage(name? : string) : Package;
     
         /**
          * Activate all the packages that should be activated. 
@@ -4517,7 +4549,7 @@ declare module Atom {
          * Activate a single package by name 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        activatePackage(name? : Package) : Q.Promise<Package>;
+        activatePackage(name? : string) : Q.Promise<Package>;
     
         /**
          * Deactivate all packages 
@@ -4529,7 +4561,7 @@ declare module Atom {
          * Deactivate the package with the given name 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        deactivatePackage(name? : Package) : Q.Promise<Package>;
+        deactivatePackage(name? : string) : Q.Promise<Package>;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4546,7 +4578,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        static isBundledPackagePath(packagePath? : boolean) : boolean;
+        static isBundledPackagePath(packagePath? : string) : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4795,7 +4827,7 @@ declare module Atom {
          * Does the given module path contain native code? 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isNativeModule(modulePath? : boolean) : boolean;
+        isNativeModule(modulePath? : string) : boolean;
     
         /**
          * Get an array of all the native modules that this package depends on.
@@ -4854,7 +4886,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        constructor({ container, orientation, children, flexScale } : { container? : any; orientation? : any; children? : any; flexScale? : any });
+        constructor({ container, orientation, children } : { container? : any; orientation? : any; children? : any });
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4865,16 +4897,6 @@ declare module Atom {
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         serializeParams() : any;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        getFlexScale() : any;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        setFlexScale(flexScale? : any) : void;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4939,22 +4961,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeFlexScale(fn? : Function /* needs to be defined */) : EventKit.Disposable;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        observeFlexScale(fn? : (any: any) => void) : EventKit.Disposable;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
         addChild(child? : any, index? : any) : void;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        adjustFlexScale() : any;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -4995,6 +5002,132 @@ declare module Atom {
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         destroyed() : void;
+    
+    }
+
+    /**
+     * Manages the list of panes within a {WorkspaceView} 
+     */
+    class PaneContainerView extends SpacePen.View {
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        static content() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        element: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        constructor(element? : any);
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setModel(model? : any) : Model;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getRoot() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onActivePaneItemChanged(activeItem? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        confirmClose() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getPaneViews() : PaneView[];
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        indexOfPane(paneView? : boolean) : Pane;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        paneAtIndex(index? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        eachPaneView(callback? : any) : PaneView;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getFocusedPane() : Pane;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getActivePane() : Pane;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getActivePaneView() : PaneView;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getActivePaneItem() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getActiveView() : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        paneForUri(uri? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focusNextPaneView() : PaneView;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focusPreviousPaneView() : PaneView;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focusPaneViewAbove() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focusPaneViewBelow() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focusPaneViewOnLeft() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focusPaneViewOnRight() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getPanes() : Pane[];
     
     }
 
@@ -5222,6 +5355,161 @@ declare module Atom {
     }
 
     /**
+     * A container which can contains multiple items to be switched between.
+     */
+    class PaneView extends SpacePen.View {
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        element: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        previousActiveItem: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        attached: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        constructor(element? : any);
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setModel(model? : any) : Model;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        afterAttach() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onPaneDestroyed() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        remove() : void;
+    
+        getModel() : Model;
+    
+        /**
+         * Use ::destroyItem 
+         */
+        removeItem(item? : any) : void;
+    
+        /**
+         * Use ::activateItem 
+         */
+        showItem(item? : any) : any;
+    
+        /**
+         * Use ::activateItemForUri 
+         */
+        showItemForUri(item? : any) : any;
+    
+        /**
+         * Use ::activateItemAtIndex 
+         */
+        showItemAtIndex(index? : any) : any;
+    
+        /**
+         * Use ::activateNextItem 
+         */
+        showNextItem() : any;
+    
+        /**
+         * Use ::activatePreviousItem 
+         */
+        showPreviousItem() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onActiveStatusChanged(active? : any) : any;
+    
+        getNextPane() : Pane;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getActivePaneItem() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onActiveItemChanged(item? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onItemAdded({ item, index } : { item? : any; index? : any }) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onItemRemoved({ item, index, destroyed } : { item? : any; index? : any; destroyed? : any }) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onItemMoved({ item, newIndex } : { item? : any; newIndex? : any }) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        onBeforeItemDestroyed({ item } : { item? : any }) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        activeItemTitleChanged() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        activeItemModifiedChanged() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitLeft(items? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitRight(items? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitUp(items? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitDown(items? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getContainer() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        focus() : void;
+    
+    }
+
+    /**
      * A container for presenting content in the center of the workspace.
      * Panes can contain multiple items, one of which is *active* at a given time.
      * The view corresponding to the active item is displayed in the interface. In
@@ -5264,30 +5552,6 @@ declare module Atom {
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         setContainer(container? : any) : void;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        setFlexScale(flexScale? : any) : void;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        getFlexScale() : any;
-    
-        /**
-         * Invoke the given callback when the pane resize
-         * 
-         * the callback will be invoked when pane's flexScale property changes
-         * @param callback - {Function} to be called when the pane is resized
-         */
-        onDidChangeFlexScale(callback : Function /* needs to be defined */) : EventKit.Disposable;
-    
-        /**
-         * Invoke the given callback with all current and future items.
-         * @param callback - {Function} to be called with current and future items.
-         */
-        observeFlexScale(callback : Function) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when the pane is activated.
@@ -5488,7 +5752,7 @@ declare module Atom {
          * @param pane? - {Pane} to which to move the item.
          * @param index? - {Number} indicating the index to which to move the item in the given pane. 
          */
-        moveItemToPane(item? : Pane, pane? : Pane, index? : number) : Pane;
+        moveItemToPane(item? : any, pane? : Pane, index? : number) : Pane;
     
         /**
          * Destroy the active item and activate the next item. 
@@ -5681,12 +5945,12 @@ declare module Atom {
          * Event Subscription
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        onDidAddPanel(callback : (panel: Panel) => void) : Panel;
+        onDidAddPanel(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidRemovePanel(callback : (panel: Panel) => void) : Panel;
+        onDidRemovePanel(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -5772,7 +6036,7 @@ declare module Atom {
          * Invoke the given callback when the pane hidden or shown.
          * @param callback - {Function} to be called when the pane is destroyed.
          */
-        onDidChangeVisible(callback : Function /* needs to be defined */) : boolean;
+        onDidChangeVisible(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when the pane is destroyed.
@@ -5843,7 +6107,7 @@ declare module Atom {
          * Invoke the given callback when the project paths change.
          * @param callback - {Function} to be called after the project paths change.
          */
-        onDidChangePaths(callback : Function /* needs to be defined */) : string;
+        onDidChangePaths(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -5949,7 +6213,7 @@ declare module Atom {
          * Is the buffer for the given path modified? 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isPathModified(filePath? : boolean) : boolean;
+        isPathModified(filePath? : string) : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -6107,11 +6371,6 @@ declare module Atom {
          */
         getScopeChain() : any;
     
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        toString() : any;
-    
     }
 
     /**
@@ -6222,6 +6481,206 @@ declare module Atom {
     }
 
     /**
+     * Provides a view that renders a list of items with an editor that
+     * filters the items. Used by many packages such as the fuzzy-finder,
+     * command-palette, symbols-view and autocomplete.
+     */
+    class SelectListView extends SpacePen.View {
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        static content() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        maxItems: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scheduleTimeout: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        inputThrottle: boolean;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        cancelling: any /* default */;
+    
+        /**
+         * Initialize the select list view.
+         * 
+         * This method can be overridden by subclasses but `super` should always
+         * be called. 
+         */
+        initialize() : boolean;
+    
+        /**
+         * Create a view for the given model item.
+         * 
+         * This method must be overridden by subclasses.
+         * 
+         * This is called when the item is about to appended to the list view.
+         * @param item? - The model item being rendered. This will always be one of the items previously passed to {::setItems}.
+         * Returns a String of HTML, DOM element, jQuery object, or View.
+         */
+        viewForItem(item? : any) : any;
+    
+        /**
+         * Callback function for when an item is selected.
+         * 
+         * This method must be overridden by subclasses.
+         * @param item? - The selected model item. This will always be one of the items previously passed to {::setItems}.
+         * Returns a DOM element, jQuery object, or {View}.
+         */
+        confirmed(item? : any) : SpacePen.View;
+    
+        /**
+         * Set the array of items to display in the list.
+         * 
+         * This should be model items not actual views. {::viewForItem} will be
+         * called to render the item when it is being appended to the list view.
+         * @param items? - The {Array} of model items to display in the list (default: []). 
+         */
+        setItems(items? : any) : void;
+    
+        /**
+         * Get the model item that is currently selected in the list view.
+         * Returns a model item.
+         */
+        getSelectedItem() : any;
+    
+        /**
+         * Get the property name to use when filtering items.
+         * 
+         * This method may be overridden by classes to allow fuzzy filtering based
+         * on a specific property of the item objects.
+         * 
+         * For example if the objects you pass to {::setItems} are of the type
+         * `{"id": 3, "name": "Atom"}` then you would return `"name"` from this method
+         * to fuzzy filter by that property when text is entered into this view's
+         * editor.
+         * Returns the property name to fuzzy filter by.
+         */
+        getFilterKey() : any;
+    
+        /**
+         * Get the filter query to use when fuzzy filtering the visible
+         * elements.
+         * 
+         * By default this method returns the text in the mini editor but it can be
+         * overridden by subclasses if needed.
+         * Returns a {String} to use when fuzzy filtering the elements to display.
+         */
+        getFilterQuery() : string;
+    
+        /**
+         * Set the maximum numbers of items to display in the list.
+         * @param maxItems? - The maximum {Number} of items to display. 
+         */
+        setMaxItems(maxItems? : number) : void;
+    
+        /**
+         * Populate the list view with the model items previously set by
+         * calling {::setItems}.
+         * 
+         * Subclasses may override this method but should always call `super`. 
+         */
+        populateList() : any;
+    
+        /**
+         * Set the error message to display.
+         * @param message? - The {String} error message (default: ''). 
+         */
+        setError(message? : string) : void;
+    
+        /**
+         * Set the loading message to display.
+         * @param message? - The {String} loading message (default: ''). 
+         */
+        setLoading(message? : string) : void;
+    
+        /**
+         * Get the message to display when there are no items.
+         * 
+         * Subclasses may override this method to customize the message.
+         * @param itemCount? - The {Number} of items in the array specified to {::setItems}
+         * @param filteredItemCount? - The {Number} of items that pass the fuzzy filter test.
+         */
+        getEmptyMessage(itemCount? : number, filteredItemCount? : number) : string;
+    
+        /**
+         * Cancel and close this select list view.
+         * 
+         * This restores focus to the previously focused element if
+         * {::storeFocusedElement} was called prior to this view being attached. 
+         */
+        cancel() : any;
+    
+        /**
+         * Focus the fuzzy filter editor view. 
+         */
+        focusFilterEditor() : void;
+    
+        /**
+         * Store the currently focused element. This element will be given
+         * back focus when {::cancel} is called. 
+         */
+        storeFocusedElement() : void;
+    
+        /**
+         * Private
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        selectPreviousItemView() : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        selectNextItemView() : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        selectItemView(view? : any) : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollToItemView(view? : any) : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        restoreFocus() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        cancelled() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getSelectedItemView() : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        confirmSelection() : Selection;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        schedulePopulateList() : any;
+    
+    }
+
+    /**
      * Represents a selection in the {TextEditor}. 
      */
     class Selection extends Model {
@@ -6269,7 +6728,7 @@ declare module Atom {
          * Calls your `callback` when the selection was moved.
          * @param callback - {Function}
          */
-        onDidChangeRange(callback : (range: Range) => void) : Range;
+        onDidChangeRange(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when the selection was destroyed
@@ -6284,7 +6743,7 @@ declare module Atom {
          * @param screenRange? - The new {Range} to use.
          * @param options? - {Object} options matching those found in {::setBufferRange}. 
          */
-        setScreenRange(screenRange? : Range, options? : Range) : Range;
+        setScreenRange(screenRange? : Range, options? : any) : Range;
     
         getBufferRange() : Range;
     
@@ -6292,7 +6751,7 @@ declare module Atom {
          * Modifies the buffer {Range} for the selection.
          * @param options? - {Object} with the keys:
          */
-        setBufferRange(bufferRange? : Range, options? : Range) : Range;
+        setBufferRange(bufferRange? : Range, options? : any) : Range;
     
         getBufferRowRange() : Range;
     
@@ -6329,7 +6788,7 @@ declare module Atom {
          */
         isReversed() : boolean;
     
-        isSingleScreenLine() : boolean;
+        isSingleScreenLine() : number;
     
         getText() : string;
     
@@ -6342,12 +6801,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        intersectsScreenRowRange(startRow? : Range, endRow? : Range) : Range;
+        intersectsScreenRowRange(startRow? : number, endRow? : number) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        intersectsScreenRow(screenRow? : boolean) : boolean;
+        intersectsScreenRow(screenRow? : number) : number;
     
         /**
          * Identifies if a selection intersects with another selection.
@@ -6563,7 +7022,7 @@ declare module Atom {
          * 
          * If there selection spans more than one line, all the lines are joined together. 
          */
-        joinLines() : number[];
+        joinLines() : string[];
     
         /**
          * Removes one level of indent from the currently selected rows. 
@@ -6613,7 +7072,7 @@ declare module Atom {
          * of levels. Leaves the first line unchanged. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        adjustIndent(lines? : number[], indentAdjustment? : any) : any;
+        adjustIndent(lines? : string[], indentAdjustment? : any) : any;
     
         /**
          * Indent the current line(s).
@@ -6681,7 +7140,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        modifySelection(fn? : Selection) : Selection;
+        modifySelection(fn? : any) : Selection;
     
         /**
          * Sets the marker's tail to the same position as the marker's head.
@@ -6696,38 +7155,6 @@ declare module Atom {
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         getGoalScreenRange() : Range;
-    
-    }
-
-    /**
-     * StorageFolder
-     * This class was not documented by atomdoc, assume it is private. Use with caution.
-     */
-    class StorageFolder {
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        constructor(containingPath? : string);
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        store(name? : string, object? : any) : void;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        load(name? : string) : any;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        pathForKey(name? : string) : string;
-    
-        /**
-         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
-         */
-        getPath() : string;
     
     }
 
@@ -7074,7 +7501,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeConfig() : Config;
+        observeConfig() : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7223,7 +7650,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        sampleBackgroundColors(suppressUpdate? : Color[]) : Color[];
+        sampleBackgroundColors(suppressUpdate? : any) : Color[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7243,7 +7670,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        containsScrollbarSelector(stylesheet? : ScopedPropertyStore.Selector) : ScopedPropertyStore.Selector;
+        containsScrollbarSelector(stylesheet? : any) : ScopedPropertyStore.Selector;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7253,7 +7680,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        consolidateSelections(e? : Selection[]) : Selection[];
+        consolidateSelections(e? : any) : Selection[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7422,12 +7849,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeModel() : Model;
+        observeModel() : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeConfig() : Config;
+        observeConfig() : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7752,7 +8179,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeDecoration(decoration? : (decoration: Decoration) => void) : Decoration;
+        observeDecoration(decoration? : (decoration: Decoration) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7807,7 +8234,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeCursor(cursor? : (cursor: Cursor) => void) : Cursor;
+        observeCursor(cursor? : (cursor: Cursor) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7822,7 +8249,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        stopBlinkingCursors(visible? : Cursor[]) : Cursor[];
+        stopBlinkingCursors(visible? : boolean) : Cursor[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -7833,6 +8260,259 @@ declare module Atom {
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
         pauseCursorBlinking() : any;
+    
+    }
+
+    /**
+     * Represents the entire visual pane in Atom.
+     */
+    class TextEditorView extends SpacePen.View {
+        /**
+         * The constructor for setting up an `TextEditorView` instance.
+         * This field or method was marked private by atomdoc. Use with caution.
+         * @param modelOrParams? - Either an {TextEditor}, or an object with one property, `mini`.  If `mini` is `true`, a "miniature" `TextEditor` is constructed.  Typically, this is ideal for scenarios where you need an Atom editor,  but without all the chrome, like scrollbars, gutter, _e.t.c._.
+         */
+        constructor(modelOrParams? : TextEditor, props? : any);
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setModel(model? : any) : Model;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        find() : any;
+    
+        /**
+         * Get the underlying editor model for this view.
+         */
+        getModel() : Model;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getEditor() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        afterAttach(onDom? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        beforeRemove() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        remove(selector? : string, keepData? : any) : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollTop(scrollTop? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollLeft(scrollLeft? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollToBottom() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollToScreenPosition(screenPosition? : TextBuffer.Point | { row: number; column: number } | [number, number], options? : any) : TextBuffer.Point;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollToBufferPosition(bufferPosition? : TextBuffer.Point | { row: number; column: number } | [number, number], options? : any) : TextBuffer.Point;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        scrollToCursorPosition() : TextBuffer.Point;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        pixelPositionForBufferPosition(bufferPosition? : TextBuffer.Point | { row: number; column: number } | [number, number]) : TextBuffer.Point;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        pixelPositionForScreenPosition(screenPosition? : TextBuffer.Point | { row: number; column: number } | [number, number]) : TextBuffer.Point;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        appendToLinesView(view? : any) : SpacePen.View;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitLeft() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitRight() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitUp() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        splitDown() : any;
+    
+        /**
+         * Get this {TextEditorView}'s {PaneView}.
+         */
+        getPaneView() : PaneView;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getPane() : Pane;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        show() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        hide() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        pageDown() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        pageUp() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getFirstVisibleScreenRow() : number;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getLastVisibleScreenRow() : number;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getFontFamily() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setFontFamily(fontFamily? : any) : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getFontSize() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setFontSize(fontSize? : any) : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setLineHeight(lineHeight? : number) : number;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setWidthInChars(widthInChars? : number) : number;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setShowIndentGuide(showIndentGuide? : any) : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setSoftWrap(softWrapped? : any) : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setShowInvisibles(showInvisibles? : boolean) : boolean;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        getText() : string;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setText(text? : string) : string;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        insertText(text? : string) : TextBuffer.Range | boolean;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        isInputEnabled() : boolean;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setInputEnabled(inputEnabled? : any) : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        requestDisplayUpdate() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        updateDisplay() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        resetDisplay() : void;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        redraw() : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setPlaceholderText(placeholderText? : string) : string;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        lineElementForScreenRow(screenRow? : number) : number;
     
     }
 
@@ -7963,7 +8643,7 @@ declare module Atom {
          * Calls your `callback` when the buffer's path, and therefore title, has changed.
          * @param callback - {Function}
          */
-        onDidChangePath(callback : (path: string) => void) : string;
+        onDidChangePath(callback : (path: string) => void) : EventKit.Disposable;
     
         /**
          * Invoke the given callback synchronously when the content of the
@@ -7995,7 +8675,7 @@ declare module Atom {
          * Calls your `callback` when a selection's screen range changes.
          * @param callback - {Function}
          */
-        onDidChangeSelectionRange(callback : (event: { oldBufferRange: TextBuffer.Point; oldScreenRange: TextBuffer.Point; newBufferRange: TextBuffer.Point; newScreenRange: TextBuffer.Point; selection: Selection; }) => any) : Range;
+        onDidChangeSelectionRange(callback : (event: { oldBufferRange: TextBuffer.Point; oldScreenRange: TextBuffer.Point; newBufferRange: TextBuffer.Point; newScreenRange: TextBuffer.Point; selection: Selection; }) => any) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when soft wrap was enabled or disabled.
@@ -8007,7 +8687,7 @@ declare module Atom {
          * Calls your `callback` when the buffer's encoding has changed.
          * @param callback - {Function}
          */
-        onDidChangeEncoding(callback : (encoding: string) => void) : string;
+        onDidChangeEncoding(callback : (encoding: string) => void) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when the grammar that interprets and
@@ -8015,14 +8695,14 @@ declare module Atom {
          * the current grammar.
          * @param callback - {Function}
          */
-        observeGrammar(callback : (grammar: FirstMate.Grammar) => void) : FirstMate.Grammar;
+        observeGrammar(callback : (grammar: FirstMate.Grammar) => void) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when the grammar that interprets and
          * colorizes the text has been changed.
          * @param callback - {Function}
          */
-        onDidChangeGrammar(callback : (grammar: FirstMate.Grammar) => void) : FirstMate.Grammar;
+        onDidChangeGrammar(callback : (grammar: FirstMate.Grammar) => void) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when the result of {::isModified} changes.
@@ -8041,13 +8721,13 @@ declare module Atom {
          * Calls your `callback` before text has been inserted.
          * @param callback - {Function}
          */
-        onWillInsertText(callback : (event: { text:string; cancel: Function; }) => void) : string;
+        onWillInsertText(callback : (event: { text:string; cancel: Function; }) => void) : EventKit.Disposable;
     
         /**
          * Calls your `callback` adter text has been inserted.
          * @param callback - {Function}
          */
-        onDidInsertText(callback : (event: { text:string; }) => void) : string;
+        onDidInsertText(callback : (event: { text:string; }) => void) : EventKit.Disposable;
     
         /**
          * Invoke the given callback after the buffer is saved to disk.
@@ -8066,68 +8746,68 @@ declare module Atom {
          * Immediately calls your callback for each existing cursor.
          * @param callback - {Function}
          */
-        observeCursors(callback : (cursor: Cursor[]) => void) : Cursor[];
+        observeCursors(callback : Function) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Cursor} is added to the editor.
          * @param callback - {Function}
          */
-        onDidAddCursor(callback : (cursor: Cursor) => void) : Cursor;
+        onDidAddCursor(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Cursor} is removed from the editor.
          * @param callback - {Function}
          */
-        onDidRemoveCursor(callback : (cursor: Cursor) => void) : Cursor;
+        onDidRemoveCursor(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Selection} is added to the editor.
          * Immediately calls your callback for each existing selection.
          * @param callback - {Function}
          */
-        observeSelections(callback : (selection: Selection[]) => void) : Selection[];
+        observeSelections(callback : Function) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Selection} is added to the editor.
          * @param callback - {Function}
          */
-        onDidAddSelection(callback : (selection: Selection) => void) : Selection;
+        onDidAddSelection(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Selection} is removed from the editor.
          * @param callback - {Function}
          */
-        onDidRemoveSelection(callback : (selection: Selection) => void) : Selection;
+        onDidRemoveSelection(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` with each {Decoration} added to the editor.
          * Calls your `callback` immediately for any existing decorations.
          * @param callback - {Function}
          */
-        observeDecorations(callback : (decoration: Decoration[]) => void) : Decoration[];
+        observeDecorations(callback : Function) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Decoration} is added to the editor.
          * @param callback - {Function}
          */
-        onDidAddDecoration(callback : (decoration: Decoration) => void) : Decoration;
+        onDidAddDecoration(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when a {Decoration} is removed from the editor.
          * @param callback - {Function}
          */
-        onDidRemoveDecoration(callback : (decoration: Decoration) => void) : Decoration;
+        onDidRemoveDecoration(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Calls your `callback` when the placeholder text is changed.
          * @param callback - {Function}
          */
-        onDidChangePlaceholderText(callback : (text: string) => void) : string;
+        onDidChangePlaceholderText(callback : (text: string) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeCharacterWidths(callback : (text: number) => void) : number;
+        onDidChangeCharacterWidths(callback : (text: number) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -8181,7 +8861,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeMini(callback : Function /* needs to be defined */) : boolean;
+        onDidChangeMini(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -8196,7 +8876,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeGutterVisible(callback : Function /* needs to be defined */) : boolean;
+        onDidChangeGutterVisible(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Set the number of characters that can be displayed horizontally in the
@@ -8352,7 +9032,7 @@ declare module Atom {
          * {Delegates to: TextBuffer.isRowBlank} 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isBufferRowBlank(bufferRow? : boolean) : boolean;
+        isBufferRowBlank(bufferRow? : number) : boolean;
     
         /**
          * {Delegates to: TextBuffer.nextNonBlankRow} 
@@ -8383,7 +9063,7 @@ declare module Atom {
          * @param text? - A {String}
          * @param options? - {Object}
          */
-        setTextInBufferRange(range? : Range, text? : string, options? : Range) : Range;
+        setTextInBufferRange(range? : Range, text? : string, options? : any) : Range;
     
         /**
          * For each selection, replace the selected text with the given text.
@@ -8436,7 +9116,7 @@ declare module Atom {
          * Duplicate the most recent cursor's current line. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        duplicateLines() : number[];
+        duplicateLines() : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -8451,7 +9131,7 @@ declare module Atom {
          * the same original area. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        splitSelectionsIntoLines() : number[];
+        splitSelectionsIntoLines() : string[];
     
         /**
          * For each selection, transpose the selected text.
@@ -8495,7 +9175,7 @@ declare module Atom {
          * the contents of each of the original non-empty lines separated by a space. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        joinLines() : number[];
+        joinLines() : string[];
     
         /**
          * For each cursor, insert a newline at beginning the following line. 
@@ -8566,7 +9246,7 @@ declare module Atom {
         /**
          * Start an open-ended transaction. 
          */
-        beginTransaction(groupingInterval? : TextBuffer.Transaction) : TextBuffer.Transaction;
+        beginTransaction(groupingInterval? : any) : TextBuffer.Transaction;
     
         /**
          * Commit an open-ended transaction started with {::beginTransaction}. 
@@ -8672,7 +9352,7 @@ declare module Atom {
          * @param range? - The {Range} to clip.
          * @param options? - See {::clipScreenPosition} `options`. Returns a {Range}. 
          */
-        clipScreenRange(range? : Range, options? : Range) : Range;
+        clipScreenRange(range? : Range, options? : TextBuffer.Range) : Range;
     
         /**
          * Adds a decoration that tracks a {Marker}. When the marker moves,
@@ -8698,7 +9378,7 @@ declare module Atom {
          * @param marker? - A {Marker} you want this decoration to follow.
          * @param decorationParams? - An {Object} representing the decoration e.g. `{type: 'line-number', class: 'linter-error'}`
          */
-        decorateMarker(marker? : Marker, decorationParams? : Marker) : Marker;
+        decorateMarker(marker? : Marker, decorationParams? : Object) : Marker;
     
         /**
          * Get all the decorations within a screen row range.
@@ -8711,31 +9391,31 @@ declare module Atom {
          * Get all decorations.
          * @param propertyFilter? - An {Object} containing key value pairs that the returned decorations' properties must match.
          */
-        getDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getDecorations(propertyFilter? : Object) : Decoration[];
     
         /**
          * Get all decorations of type 'line'.
          * @param propertyFilter? - An {Object} containing key value pairs that the returned decorations' properties must match.
          */
-        getLineDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getLineDecorations(propertyFilter? : Object) : Decoration[];
     
         /**
          * Get all decorations of type 'line-number'.
          * @param propertyFilter? - An {Object} containing key value pairs that the returned decorations' properties must match.
          */
-        getLineNumberDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getLineNumberDecorations(propertyFilter? : Object) : Decoration[];
     
         /**
          * Get all decorations of type 'highlight'.
          * @param propertyFilter? - An {Object} containing key value pairs that the returned decorations' properties must match.
          */
-        getHighlightDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getHighlightDecorations(propertyFilter? : Object) : Decoration[];
     
         /**
          * Get all decorations of type 'overlay'.
          * @param propertyFilter? - An {Object} containing key value pairs that the returned decorations' properties must match.
          */
-        getOverlayDecorations(propertyFilter? : Decoration[]) : Decoration[];
+        getOverlayDecorations(propertyFilter? : Object) : Decoration[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -8777,7 +9457,7 @@ declare module Atom {
          * with the range of the markers rather than their properties.
          * @param properties? - An {Object} containing properties that each returned marker must satisfy. Markers can be associated with custom properties, which are compared with basic equality. In addition, several reserved properties can be used to filter markers based on their current range:
          */
-        findMarkers(properties? : Marker[]) : Marker[];
+        findMarkers(properties? : Object) : Marker[];
     
         /**
          * Get the {Marker} for the given marker id.
@@ -8799,7 +9479,7 @@ declare module Atom {
          * {Delegates to: DisplayBuffer.destroyMarker} 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        destroyMarker(args? : Marker) : Marker;
+        destroyMarker(args? : any) : Marker;
     
         /**
          * Get the position of the most recently added cursor in buffer
@@ -8955,7 +9635,7 @@ declare module Atom {
     
         getLastCursor() : Cursor;
     
-        getWordUnderCursor(options? : Cursor) : Cursor;
+        getWordUnderCursor(options? : any) : Cursor;
     
         /**
          * Get an Array of all {Cursor}s. 
@@ -8972,7 +9652,7 @@ declare module Atom {
          * Add a cursor based on the given {Marker}. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        addCursor(marker? : Cursor) : Cursor;
+        addCursor(marker? : Marker) : Cursor;
     
         /**
          * Remove the given cursor from this editor. 
@@ -8983,7 +9663,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        moveCursors(fn? : Cursor[]) : Cursor[];
+        moveCursors(fn? : any) : Cursor[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -9025,7 +9705,7 @@ declare module Atom {
          * @param bufferRange? - A {Range} or range-compatible {Array}.
          * @param options? - An options {Object}:
          */
-        setSelectedBufferRange(bufferRange? : Range, options? : Range) : Range;
+        setSelectedBufferRange(bufferRange? : Range, options? : any) : Range;
     
         /**
          * Set the selected ranges in buffer coordinates. If there are multiple
@@ -9033,7 +9713,7 @@ declare module Atom {
          * @param bufferRanges? - An {Array} of {Range}s or range-compatible {Array}s.
          * @param options? - An options {Object}:
          */
-        setSelectedBufferRanges(bufferRanges? : Range[], options? : Range[]) : Range[];
+        setSelectedBufferRanges(bufferRanges? : Range[], options? : any) : Range[];
     
         /**
          * Get the {Range} of the most recently added selection in screen
@@ -9054,7 +9734,7 @@ declare module Atom {
          * @param screenRange? - A {Range} or range-compatible {Array}.
          * @param options? - An options {Object}:
          */
-        setSelectedScreenRange(screenRange? : Range, options? : Range) : Range;
+        setSelectedScreenRange(screenRange? : Range, options? : any) : Range;
     
         /**
          * Set the selected ranges in screen coordinates. If there are multiple
@@ -9062,21 +9742,21 @@ declare module Atom {
          * @param screenRanges? - An {Array} of {Range}s or range-compatible {Array}s.
          * @param options? - An options {Object}:
          */
-        setSelectedScreenRanges(screenRanges? : Range[], options? : Range[]) : Range[];
+        setSelectedScreenRanges(screenRanges? : Range[], options? : any) : Range[];
     
         /**
          * Add a selection for the given range in buffer coordinates.
          * @param bufferRange? - A {Range}
          * @param options? - An options {Object}:
          */
-        addSelectionForBufferRange(bufferRange? : Range, options? : Range) : Range;
+        addSelectionForBufferRange(bufferRange? : Range, options? : any) : Range;
     
         /**
          * Add a selection for the given range in screen coordinates.
          * @param screenRange? - A {Range}
          * @param options? - An options {Object}:
          */
-        addSelectionForScreenRange(screenRange? : Range, options? : Range) : Range;
+        addSelectionForScreenRange(screenRange? : Range, options? : any) : Range;
     
         /**
          * Select from the current cursor position to the given position in
@@ -9333,7 +10013,7 @@ declare module Atom {
          * afterward. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        mergeIntersectingSelections(args? : Selection[]) : Selection[];
+        mergeIntersectingSelections(args? : any) : Selection[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -9343,7 +10023,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        mergeSelections(args? : Selection[]) : Selection[];
+        mergeSelections(args? : any) : Selection[];
     
         /**
          * Add a {Selection} based on the given {Marker}.
@@ -9351,7 +10031,7 @@ declare module Atom {
          * @param marker? - The {Marker} to highlight
          * @param options? - An {Object} that pertains to the {Selection} constructor.
          */
-        addSelection(marker? : Selection, options? : Selection) : Selection;
+        addSelection(marker? : Marker, options? : any) : Selection;
     
         /**
          * Remove the given selection. 
@@ -9364,7 +10044,7 @@ declare module Atom {
          * recently added cursor. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        clearSelections(options? : Selection[]) : Selection[];
+        clearSelections(options? : any) : Selection[];
     
         /**
          * Reduce multiple selections to the most recently added selection. 
@@ -9398,7 +10078,7 @@ declare module Atom {
          * @param range? - A {Range} in which to search.
          * @param iterator? - A {Function} that's called on each match with an {Object} containing the following keys:
          */
-        scanInBufferRange(regex? : Range, range? : Range, iterator? : Range) : Range;
+        scanInBufferRange(regex? : RegExp, range? : Range, iterator? : Function) : Range;
     
         /**
          * Scan regular expression matches in a given range in reverse order,
@@ -9407,7 +10087,7 @@ declare module Atom {
          * @param range? - A {Range} in which to search.
          * @param iterator? - A {Function} that's called on each match with an {Object} containing the following keys:
          */
-        backwardsScanInBufferRange(regex? : Range, range? : Range, iterator? : Range) : Range;
+        backwardsScanInBufferRange(regex? : RegExp, range? : Range, iterator? : Function) : Range;
     
         getSoftTabs() : boolean;
     
@@ -9479,7 +10159,7 @@ declare module Atom {
         /**
          * Get the indentation level of the given a buffer row.
          */
-        indentationForBufferRow(bufferRow? : boolean) : boolean;
+        indentationForBufferRow(bufferRow? : number) : number;
     
         /**
          * Set the indentation level for the given buffer row.
@@ -9508,7 +10188,7 @@ declare module Atom {
         /**
          * Get the indentation level of the given line of text.
          */
-        indentLevelForLine(line? : boolean) : boolean;
+        indentLevelForLine(line? : number) : number;
     
         /**
          * Indent rows intersecting selections based on the grammar's suggested
@@ -9575,7 +10255,7 @@ declare module Atom {
         /**
          * Determine if the given row is entirely a comment 
          */
-        isBufferRowCommented(bufferRow? : boolean) : boolean;
+        isBufferRowCommented(bufferRow? : number) : boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -9649,7 +10329,7 @@ declare module Atom {
         /**
          * For each selection, fold the rows it intersects. 
          */
-        foldSelectedLines() : number[];
+        foldSelectedLines() : string[];
     
         /**
          * Fold all foldable lines. 
@@ -9673,14 +10353,14 @@ declare module Atom {
          * A *foldable* row is a row that *starts* a row range that can be folded.
          * @param bufferRow? - A {Number}
          */
-        isFoldableAtBufferRow(bufferRow? : number) : boolean;
+        isFoldableAtBufferRow(bufferRow? : number) : number;
     
         /**
          * Determine whether the given row in screen coordinates is foldable.
          * 
          * A *foldable* row is a row that *starts* a row range that can be folded.
          */
-        isFoldableAtScreenRow(screenRow? : boolean) : boolean;
+        isFoldableAtScreenRow(screenRow? : number) : number;
     
         /**
          * Fold the given buffer row if it isn't currently folded, and unfold
@@ -9691,24 +10371,24 @@ declare module Atom {
         /**
          * Determine whether the most recently added cursor's row is folded.
          */
-        isFoldedAtCursorRow() : boolean;
+        isFoldedAtCursorRow() : number;
     
         /**
          * Determine whether the given row in buffer coordinates is folded.
          * @param bufferRow? - A {Number}
          */
-        isFoldedAtBufferRow(bufferRow? : number) : boolean;
+        isFoldedAtBufferRow(bufferRow? : number) : number;
     
         /**
          * Determine whether the given row in screen coordinates is folded.
          * @param screenRow? - A {Number}
          */
-        isFoldedAtScreenRow(screenRow? : number) : boolean;
+        isFoldedAtScreenRow(screenRow? : number) : number;
     
         /**
          * Rename to foldRowRange? 
          */
-        createFold(startRow? : Fold, endRow? : Fold) : Fold;
+        createFold(startRow? : number, endRow? : number) : Fold;
     
         /**
          * {Delegates to: DisplayBuffer.destroyFoldWithId} 
@@ -9744,7 +10424,7 @@ declare module Atom {
          * {Delegates to: DisplayBuffer.outermostFoldsForBufferRowRange} 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        outermostFoldsInBufferRowRange(startRow? : Range, endRow? : Range) : Range;
+        outermostFoldsInBufferRowRange(startRow? : number, endRow? : number) : Range;
     
         /**
          * Scroll the editor to reveal the most recently added cursor if it is
@@ -9780,7 +10460,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        scrollToScreenRange(screenRange? : Range, options? : Range) : Range;
+        scrollToScreenRange(screenRange? : Range, options? : any) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -9891,12 +10571,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getFirstVisibleScreenRow(suppressDeprecation? : any) : boolean;
+        getFirstVisibleScreenRow(suppressDeprecation? : any) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getLastVisibleScreenRow(suppressDeprecation? : any) : boolean;
+        getLastVisibleScreenRow(suppressDeprecation? : any) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10061,12 +10741,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        intersectsVisibleRowRange(startRow? : Range, endRow? : Range) : Range;
+        intersectsVisibleRowRange(startRow? : number, endRow? : number) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        selectionIntersectsVisibleRowRange(selection? : Range) : Range;
+        selectionIntersectsVisibleRowRange(selection? : Selection) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10087,7 +10767,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        logScreenLines(start? : any, end? : any) : number[];
+        logScreenLines(start? : any, end? : any) : string[];
     
     }
 
@@ -10400,7 +11080,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        breakOutAtomicTokens(tabLength? : Token[], breakOutLeadingSoftTabs? : Token[], startColumn? : Token[]) : Token[];
+        breakOutAtomicTokens(tabLength? : number, breakOutLeadingSoftTabs? : any, startColumn? : number) : Token[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10410,27 +11090,27 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildPairedCharacterToken(value? : Token, index? : Token) : Token;
+        buildPairedCharacterToken(value? : any, index? : any) : Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildHardTabToken(tabLength? : Token, column? : Token) : Token;
+        buildHardTabToken(tabLength? : number, column? : number) : Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildSoftTabToken(tabLength? : Token) : Token;
+        buildSoftTabToken(tabLength? : number) : Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildTabToken(tabLength? : Token, isHardTab? : Token, column? : Token) : Token;
+        buildTabToken(tabLength? : number, isHardTab? : any, column? : number) : Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildSoftWrapIndentationToken(length? : Token) : Token;
+        buildSoftWrapIndentationToken(length? : number) : Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10542,12 +11222,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        observeGrammar(callback : (grammar: FirstMate.Grammar) => void) : FirstMate.Grammar;
+        observeGrammar(callback : (any: any) => void) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        onDidChangeGrammar(callback : (grammar: FirstMate.Grammar) => void) : FirstMate.Grammar;
+        onDidChangeGrammar(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10567,7 +11247,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        setGrammar(grammar? : FirstMate.Grammar, score? : FirstMate.Grammar) : FirstMate.Grammar;
+        setGrammar(grammar? : FirstMate.Grammar, score? : any) : FirstMate.Grammar;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10582,7 +11262,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        retokenizeLines() : number[];
+        retokenizeLines() : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10632,7 +11312,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        invalidateRow(row? : boolean) : boolean;
+        invalidateRow(row? : number) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10657,18 +11337,18 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isFoldableAtRow(row? : boolean) : boolean;
+        isFoldableAtRow(row? : number) : number;
     
         /**
          * 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isFoldableCodeAtRow(row? : boolean) : boolean;
+        isFoldableCodeAtRow(row? : number) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isFoldableCommentAtRow(row? : boolean) : boolean;
+        isFoldableCommentAtRow(row? : number) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10708,12 +11388,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        indentLevelForRow(bufferRow? : boolean) : boolean;
+        indentLevelForRow(bufferRow? : number) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        indentLevelForLine(line? : boolean) : boolean;
+        indentLevelForLine(line? : number) : number;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10738,12 +11418,12 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        iterateTokensInBufferRange(bufferRange? : Range, iterator? : Range) : Range;
+        iterateTokensInBufferRange(bufferRange? : Range, iterator? : any) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        backwardsIterateTokensInBufferRange(bufferRange? : Range, iterator? : Range) : Range;
+        backwardsIterateTokensInBufferRange(bufferRange? : Range, iterator? : any) : Range;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10769,7 +11449,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        logLines(start? : any, end? : any) : number[];
+        logLines(start? : any, end? : any) : string[];
     
     }
 
@@ -10897,7 +11577,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        buildSoftWrapIndentationTokens(token? : Token[], hangingIndent? : Token[]) : Token[];
+        buildSoftWrapIndentationTokens(token? : Token, hangingIndent? : any) : Token[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -10912,7 +11592,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        isColumnInsideSoftWrapIndentation(column? : boolean) : boolean;
+        isColumnInsideSoftWrapIndentation(column? : number) : boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -11032,7 +11712,7 @@ declare module Atom {
          * @param target? - An `HTMLElement`
          * @param options? - See http://getbootstrap.com/javascript/#tooltips for a full list of options. You can also supply the following additional options:
          */
-        add(target? : HTMLElement, options? : { animation?: boolean;  html?: boolean; placement?: any; selector?: string; title?: any; trigger?: string; delay?: any; container?: any; keyBindingCommand?: string; keyBindingTarget?: string; }) : void;
+        add(target? : HTMLElement, options? : { animation?: boolean;  html?: boolean; placement?: any; selector?: string; title?: any; trigger?: string; delay?: any; container?: any; keyBindingCommand?: string; keyBindingTarget?: string; }) : EventKit.Disposable;
     
     }
 
@@ -11082,12 +11762,12 @@ declare module Atom {
          * manipulation that isn't supported via the model API.
          * @param object? - The object for which you want to retrieve a view. This can be a pane item, a pane, or the workspace itself.
          */
-        getView(object? : SpacePen.View) : SpacePen.View;
+        getView(object? : any) : SpacePen.View;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createView(object? : SpacePen.View) : (model: any) => HTMLElement;
+        createView(object? : any) : (model: any) => HTMLElement;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -11200,6 +11880,173 @@ declare module Atom {
     }
 
     /**
+     * The top-level view for the entire window. An instance of this class is
+     * available via the `atom.workspaceView` global.
+     */
+    class WorkspaceView extends SpacePen.View {
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        element: any /* default */;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        constructor(element? : any);
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        setModel(model? : any) : Model;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        beforeRemove() : any;
+    
+        /**
+         * Get the underlying model object.
+         */
+        getModel() : Model;
+    
+        /**
+         * Register a function to be called for every current and future
+         * editor view in the workspace (only includes {TextEditorView}s that are pane
+         * items).
+         * @param callback? - A {Function} with an {TextEditorView} as its only argument.
+         */
+        eachEditorView(callback? : Function) : SpacePen.View;
+    
+        /**
+         * Register a function to be called for every current and future
+         * pane view in the workspace.
+         * @param callback? - A {Function} with a {PaneView} as its only argument.
+         */
+        eachPaneView(callback? : Function) : PaneView;
+    
+        /**
+         * Get all existing pane views.
+         * 
+         * Prefer {Workspace::getPanes} if you don't need access to the view objects.
+         * Also consider using {::eachPaneView} if you want to register a callback for
+         * all current and *future* pane views.
+         */
+        getPaneViews() : PaneView[];
+    
+        /**
+         * Get the active pane view.
+         * 
+         * Prefer {Workspace::getActivePane} if you don't actually need access to the
+         * view.
+         */
+        getActivePaneView() : PaneView;
+    
+        /**
+         * Get the view associated with the active pane item.
+         */
+        getActiveView() : SpacePen.View;
+    
+        /**
+         * Adding elements to the workspace
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        prependToTop(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        appendToTop(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        prependToBottom(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        appendToBottom(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        prependToLeft(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        appendToLeft(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        prependToRight(element? : any) : any;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        appendToRight(element? : any) : any;
+    
+        /**
+         * Focus the previous pane by id. 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        focusPreviousPaneView() : PaneView;
+    
+        /**
+         * Focus the next pane by id. 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        focusNextPaneView() : PaneView;
+    
+        /**
+         * Focus the pane directly above the active pane. 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        focusPaneViewAbove() : void;
+    
+        /**
+         * Focus the pane directly below the active pane. 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        focusPaneViewBelow() : void;
+    
+        /**
+         * Focus the pane directly to the left of the active pane. 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        focusPaneViewOnLeft() : void;
+    
+        /**
+         * Focus the pane directly to the right of the active pane. 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        focusPaneViewOnRight() : void;
+    
+        /**
+         * Prompts to save all unsaved items 
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        confirmClose() : any;
+    
+        /**
+         * Get all editor views.
+         * 
+         * You should prefer {Workspace::getEditors} unless you absolutely need access
+         * to the view objects. Also consider using {::eachEditorView}, which will call
+         * a callback for all current and *future* editor views.
+         * This field or method was marked private by atomdoc. Use with caution.
+         */
+        getEditorViews() : SpacePen.View[];
+    
+        /**
+         * Call {Workspace::getActivePaneItem} instead. 
+         */
+        getActivePaneItem() : any;
+    
+    }
+
+    /**
      * Represents the state of the user interface for the entire window.
      * An instance of this class is available via the `atom.workspace` global.
      */
@@ -11234,7 +12081,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        installShellCommands() : boolean;
+        installShellCommands() : string;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -11260,7 +12107,7 @@ declare module Atom {
          * editors in the workspace.
          * @param callback - {Function} to be called with current and future text editors.
          */
-        observeTextEditors(callback : (editor: Atom.TextEditor) => void) : TextEditor[];
+        observeTextEditors(callback : (editor: Atom.TextEditor) => void) : EventKit.Disposable;
     
         /**
          * Invoke the given callback with all current and future panes items
@@ -11294,34 +12141,34 @@ declare module Atom {
          * Invoke the given callback when a pane is added to the workspace.
          * @param callback - {Function} to be called panes are added.
          */
-        onDidAddPane(callback : (pane: Pane) => void) : Pane;
+        onDidAddPane(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a pane is destroyed in the
          * workspace.
          * @param callback - {Function} to be called panes are destroyed.
          */
-        onDidDestroyPane(callback : (pane: Pane) => void) : Pane;
+        onDidDestroyPane(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback with all current and future panes in the
          * workspace.
          * @param callback - {Function} to be called with current and future panes.
          */
-        observePanes(callback : (pane: Pane[]) => void) : Pane[];
+        observePanes(callback : Function) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when the active pane changes.
          * @param callback - {Function} to be called when the active pane changes.
          */
-        onDidChangeActivePane(callback : (pane: Pane) => void) : Pane;
+        onDidChangeActivePane(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback with the current active pane and when
          * the active pane changes.
          * @param callback - {Function} to be called with the current and future active# panes.
          */
-        observeActivePane(callback : (pane: Pane) => void) : Pane;
+        observeActivePane(callback : Function) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a pane item is added to the
@@ -11348,7 +12195,7 @@ declare module Atom {
          * workspace.
          * @param callback - {Function} to be called panes are added.
          */
-        onDidAddTextEditor(callback : (texteditor: TextEditor) => void) : TextEditor;
+        onDidAddTextEditor(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Opens the given URI in Atom asynchronously.
@@ -11379,7 +12226,7 @@ declare module Atom {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        openURIInPane(uri? : Pane, pane? : Pane, options? : Pane) : Pane;
+        openURIInPane(uri? : any, pane? : Pane, options? : any) : Pane;
     
         /**
          * Asynchronously reopens the last-closed item's URI if it hasn't already been
@@ -11555,7 +12402,7 @@ declare module Atom {
          * Adds a panel item to the bottom of the editor window.
          * @param options? - {Object}
          */
-        addBottomPanel(options? : Panel) : Panel;
+        addBottomPanel(options? : any) : Panel;
     
         /**
          * Get an {Array} of all the panel items to the left of the editor window. 
@@ -11566,7 +12413,7 @@ declare module Atom {
          * Adds a panel item to the left of the editor window.
          * @param options? - {Object}
          */
-        addLeftPanel(options? : Panel) : Panel;
+        addLeftPanel(options? : any) : Panel;
     
         /**
          * Get an {Array} of all the panel items to the right of the editor window. 
@@ -11577,7 +12424,7 @@ declare module Atom {
          * Adds a panel item to the right of the editor window.
          * @param options? - {Object}
          */
-        addRightPanel(options? : Panel) : Panel;
+        addRightPanel(options? : any) : Panel;
     
         /**
          * Get an {Array} of all the panel items at the top of the editor window. 
@@ -11588,7 +12435,7 @@ declare module Atom {
          * Adds a panel item to the top of the editor window above the tabs.
          * @param options? - {Object}
          */
-        addTopPanel(options? : Panel) : Panel;
+        addTopPanel(options? : any) : Panel;
     
         /**
          * Get an {Array} of all the modal panel items 
@@ -11599,19 +12446,19 @@ declare module Atom {
          * Adds a panel item as a modal dialog.
          * @param options? - {Object}
          */
-        addModalPanel(options? : Panel) : Panel;
+        addModalPanel(options? : any) : Panel;
     
         panelForItem(item? : any) : Panel | any;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getPanels(location? : Panel[]) : Panel[];
+        getPanels(location? : any) : Panel[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addPanel(location? : Panel, options? : Panel) : Panel;
+        addPanel(location? : any, options? : any) : Panel;
     
         /**
          * Performs a search across all the files in the workspace.

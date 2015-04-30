@@ -20,14 +20,14 @@ declare module FirstMate {
          * Invoke the given callback when a grammar is added to the registry.
          * @param callback - {Function} to call when a grammar is added.
          */
-        onDidAddGrammar(callback : (grammar: Grammar) => void) : Grammar;
+        onDidAddGrammar(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a grammar is updated due to a grammar
          * it depends on being added or removed from the registry.
          * @param callback - {Function} to call when a grammar is updated.
          */
-        onDidUpdateGrammar(callback : (grammar: Grammar) => void) : Grammar;
+        onDidUpdateGrammar(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Get all the grammars in this registry.
@@ -71,7 +71,7 @@ declare module FirstMate {
          * @param grammarPath? - A {String} absolute file path to a grammar file.
          * @param callback? - A {Function} to call when read with the following arguments:
          */
-        readGrammar(grammarPath? : string, callback? : Grammar) : Grammar;
+        readGrammar(grammarPath? : string, callback? : Function) : Grammar;
     
         /**
          * Read a grammar synchronously and add it to this registry.
@@ -85,7 +85,7 @@ declare module FirstMate {
          * @param grammarPath? - A {String} absolute file path to a grammar file.
          * @param callback? - A {Function} to call when loaded with the following arguments:
          */
-        loadGrammar(grammarPath? : string, callback? : Grammar) : Grammar;
+        loadGrammar(grammarPath? : string, callback? : Function) : Grammar;
     
         /**
          * Get the grammar override for the given file path.
@@ -124,7 +124,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createToken(value? : Atom.Token, scopes? : Atom.Token) : Atom.Token;
+        createToken(value? : any, scopes? : Atom.Scope[]) : Atom.Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -134,7 +134,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createGrammar(grammarPath? : Grammar, object? : Grammar) : Grammar;
+        createGrammar(grammarPath? : string, object? : any) : Grammar;
     
     }
 
@@ -168,7 +168,7 @@ declare module FirstMate {
          * Tokenize all lines in the given text.
          * @param text? - A {String} containing one or more lines.
          */
-        tokenizeLines(text? : string) : number[];
+        tokenizeLines(text? : string) : string[];
     
         /**
          * Tokenize the line of text.
@@ -231,17 +231,17 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createToken(value? : Atom.Token, scopes? : Atom.Token) : Atom.Token;
+        createToken(value? : any, scopes? : Atom.Scope[]) : Atom.Token;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createRule(options? : Rule) : Rule;
+        createRule(options? : any) : Rule;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createPattern(options? : Pattern) : Pattern;
+        createPattern(options? : any) : Pattern;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -275,12 +275,12 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getScanner(injection? : Scanner) : Scanner;
+        getScanner(injection? : any) : Scanner;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getScanners(ruleStack? : Scanner[]) : Scanner[];
+        getScanners(ruleStack? : any) : Scanner[];
     
     }
 
@@ -349,7 +349,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getIncludedPatterns(baseGrammar? : Pattern[], included? : Pattern[]) : Pattern[];
+        getIncludedPatterns(baseGrammar? : Grammar, included? : any) : Pattern[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -364,7 +364,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getTokensForCaptureRule(rule? : Rule, line? : Rule, captureStart? : Rule, captureEnd? : Rule, scopes? : Rule, stack? : Rule) : Rule;
+        getTokensForCaptureRule(rule? : Rule, line? : number, captureStart? : any, captureEnd? : any, scopes? : Atom.Scope[], stack? : any) : Rule;
     
         /**
          * Get the tokens for the capture indices.
@@ -428,7 +428,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getIncludedPatterns(baseGrammar? : Pattern[], included? : Pattern[]) : Pattern[];
+        getIncludedPatterns(baseGrammar? : Grammar, included? : any) : Pattern[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -438,7 +438,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getScanner(baseGrammar? : Scanner) : Scanner;
+        getScanner(baseGrammar? : Grammar) : Scanner;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -458,7 +458,7 @@ declare module FirstMate {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getNextTokens(ruleStack? : Atom.Token[], line? : Atom.Token[], position? : Atom.Token[], firstLine? : Atom.Token[]) : Atom.Token[];
+        getNextTokens(ruleStack? : any, line? : number, position? : TextBuffer.Point | { row: number; column: number } | [number, number], firstLine? : number) : Atom.Token[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -486,13 +486,13 @@ declare module FirstMate {
          * Create a new {OnigScanner} with the given options. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        createScanner(firstLine? : Scanner, position? : Scanner, anchorPosition? : Scanner) : Scanner;
+        createScanner(firstLine? : number, position? : TextBuffer.Point | { row: number; column: number } | [number, number], anchorPosition? : TextBuffer.Point | { row: number; column: number } | [number, number]) : Scanner;
     
         /**
          * Get the {OnigScanner} for the given position and options. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        getScanner(firstLine? : Scanner, position? : Scanner, anchorPosition? : Scanner) : Scanner;
+        getScanner(firstLine? : number, position? : TextBuffer.Point | { row: number; column: number } | [number, number], anchorPosition? : TextBuffer.Point | { row: number; column: number } | [number, number]) : Scanner;
     
         /**
          * Find the next match on the line start at the given position

@@ -61,7 +61,7 @@ export default function(provider: BuilderProvider) {
         return `${Project.getProjectDisplayName(targetClass.project) }.${targetClass.name}`;
     });*/
 
-    provider.type()
+    provider.type(false)
         .order(-900)
         .forProperty(property => _.any(knownClasses, cls => property.name && _.endsWith(getProperName(property.name).toLowerCase(), cls.toLowerCase())))
         .compute(function({cls, property, type}) {
@@ -149,7 +149,7 @@ export default function(provider: BuilderProvider) {
 
     provider.type()
         .order(-990)
-        .forProperty(p => _.any(["is", "should", 'use', "in"], z => _.startsWith(p.name, z)))
+        .forProperty(p => _.any(["is", "should", 'use', "in", "was"], z => _.startsWith(p.name, z)))
         .return("boolean");
 
     provider.type()
@@ -169,7 +169,7 @@ export default function(provider: BuilderProvider) {
     });
 
     provider.type()
-        .order(-999)
+        .order(-800)
         .forPropertyName(name => _.any(['onDid', 'observe', 'onWill'], z => _.startsWith(name, z)))
         .return("EventKit.Disposable");
 
@@ -184,7 +184,7 @@ export default function(provider: BuilderProvider) {
         .return("boolean");
 
     provider.type()
-        .order(-990)
+        .order(-900)
         .forPropertyName(name => _.any(['pid'], z => _.contains(name.toLowerCase(), z)))
         .return("number");
 
@@ -193,22 +193,27 @@ export default function(provider: BuilderProvider) {
         .return("boolean");
 
     provider.type()
-        .order(-990)
+        .order(-900)
         .forPropertyName(name => _.any(['name', 'encoding', 'text', 'text?', 'geturi', 'url', 'path', 'specdirectory', 'command', 'message'], z => _.contains(name.toLowerCase(), z.toLowerCase())))
         .return("string");
 
     provider.type()
         .order(-990)
-        .forPropertyName(name => _.any(['columns', 'rows', 'lines'], z => _.endsWith(name.toLowerCase(), z)))
+        .forPropertyName(name => _.any(['columns', 'rows'], z => _.endsWith(name.toLowerCase(), z)))
         .return('number[]');
 
     provider.type()
         .order(-990)
+        .forPropertyName(name => _.any(['lines'], z => _.endsWith(name.toLowerCase(), z)))
+        .return('string[]');
+
+    provider.type()
+        .order(-900)
         .forPropertyName(name => _.any(['pid', 'version', 'vertical', 'horizontal', 'width', 'height'], z => _.contains(name.toLowerCase(), z)))
         .return('number');
 
     provider.type()
-        .order(-990)
+        .order(-900)
         .forPropertyName(name => _.any(['column', 'row', 'line', 'vertical', 'horizontal', 'width', 'height', 'count', 'length'], z => _.endsWith(name.toLowerCase(), z)))
         .return('number');
 
@@ -218,6 +223,7 @@ export default function(provider: BuilderProvider) {
         return ((property.paramNames && property.paramNames[index]) || name) + '?'
     });
 
+    // Toggle to help identify problem areas
     provider.remapType(true)
         .forType(z => z === "void")
         .return("any");
@@ -246,6 +252,11 @@ export default function(provider: BuilderProvider) {
         }
         return type;
     })
+
+    provider.remapType()
+        .forProperty(x => _.any(['change','show','hide','toggle','click','dblclick','focus'], z => z === x.name))
+        .forClass(z => _.endsWith(z.name, "View"))
+        .return("void");
 
 
 };

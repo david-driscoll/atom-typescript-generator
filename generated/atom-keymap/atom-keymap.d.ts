@@ -1,4 +1,4 @@
-// Type definitions for atom-keymap (v5.1.2)
+// Type definitions for atom-keymap (v5.1.0)
 // Project: https://github.com/atom/atom-keymap
 // Definitions by: david-driscoll <https://github.com/david-driscoll/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -183,7 +183,7 @@ declare module AtomKeymap {
          * Invoke the given callback when a keymap file not able to be loaded.
          * @param callback - {Function} to be called when a keymap file is unloaded.
          */
-        onDidFailToReadFile(callback : (file: Pathwatcher.File) => void) : Pathwatcher.File;
+        onDidFailToReadFile(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Add sets of key bindings grouped by CSS selector.
@@ -205,7 +205,7 @@ declare module AtomKeymap {
          * Get the key bindings for a given command and optional target.
          * @param params? - An {Object} whose keys constrain the binding search:
          */
-        findKeyBindings(params? : KeyBinding[]) : KeyBinding[];
+        findKeyBindings(params? : Object) : KeyBinding[];
     
         /**
          * Load the key bindings from the given path.
@@ -344,7 +344,12 @@ declare module AtomKeymap {
          * based on the binding's command. 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        dispatchCommandEvent(command? : CommandEvent, target? : CommandEvent, keyboardEvent? : CommandEvent) : CommandEvent;
+        dispatchCommandEvent(command? : string, target? : any, keyboardEvent? : any) : CommandEvent;
+    
+        /**
+         * This field or method was not documented by atomdoc, assume it is private. Use with caution.
+         */
+        isValidSelector(selector? : string) : ScopedPropertyStore.Selector;
     
         /**
          * Chromium does not bubble events dispatched on detached targets, which makes

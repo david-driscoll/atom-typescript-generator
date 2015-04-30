@@ -115,14 +115,14 @@ declare module Pathwatcher {
          * Traverse within this Directory to a child File. This method doesn't
          * actually check to see if the File exists, it just creates the File object.
          */
-        getFile(filename? : File) : File;
+        getFile(filename? : string) : File;
     
         /**
          * Traverse within this a Directory to a child Directory. This method
          * doesn't actually check to see if the Directory exists, it just creates the
          * Directory object.
          */
-        getSubdirectory(dirname? : Directory) : Directory;
+        getSubdirectory(dirname? : string) : Directory;
     
         /**
          * Reads file entries in this directory from disk synchronously.
@@ -153,7 +153,7 @@ declare module Pathwatcher {
          * Does given full path start with the given prefix? 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        isPathPrefixOf(prefix? : boolean, fullPath? : boolean) : boolean;
+        isPathPrefixOf(prefix? : boolean, fullPath? : string) : string;
     
     }
 
@@ -208,7 +208,7 @@ declare module Pathwatcher {
          * Invoke the given callback when the file's path changes.
          * @param callback - {Function} to be called when the file's path changes.
          */
-        onDidRename(callback : Function /* needs to be defined */) : string;
+        onDidRename(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when the file is deleted.
@@ -329,7 +329,7 @@ declare module Pathwatcher {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        writeFile(filePath? : File, contents? : File) : File;
+        writeFile(filePath? : string, contents? : any) : File;
     
         /**
          * Writes the text to specified path.

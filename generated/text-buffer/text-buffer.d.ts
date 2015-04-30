@@ -164,7 +164,7 @@ declare module TextBuffer {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        beginTransaction(groupingInterval? : Transaction) : Transaction;
+        beginTransaction(groupingInterval? : any) : Transaction;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -264,7 +264,7 @@ declare module TextBuffer {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        getMarker(id? : Atom.Marker) : Atom.Marker;
+        getMarker(id? : any) : Atom.Marker;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -279,22 +279,22 @@ declare module TextBuffer {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        findMarkers(params? : Atom.Marker[]) : Atom.Marker[];
+        findMarkers(params? : any) : Atom.Marker[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        createMarker(params? : Atom.Marker) : Atom.Marker;
+        createMarker(params? : any) : Atom.Marker;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        removeMarker(id? : Atom.Marker) : Atom.Marker;
+        removeMarker(id? : any) : Atom.Marker;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        recordMarkerPatch(patch? : MarkerPatch) : MarkerPatch;
+        recordMarkerPatch(patch? : any) : MarkerPatch;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -434,7 +434,7 @@ declare module TextBuffer {
          * @param range? - A {Range} or range-compatible {Array}. The range will be clipped before it is assigned.
          * @param properties? - {Object} properties to associate with the marker.
          */
-        setRange(range? : Atom.Range, properties? : Atom.Range) : Atom.Range;
+        setRange(range? : Atom.Range, properties? : any) : Atom.Range;
     
         getHeadPosition() : Point;
     
@@ -703,7 +703,7 @@ declare module TextBuffer {
     
         /**
          * Call this with the result of {Range::serialize} to construct a new Range.
-         * @param array? - {Array} of params to pass to the {::constructor} 
+         * @param array? - {array} of params to pass to the {::constructor} 
          */
         static deserialize(array? : any[]) : any;
     
@@ -723,7 +723,7 @@ declare module TextBuffer {
          */
         isEmpty() : boolean;
     
-        isSingleLine() : boolean;
+        isSingleLine() : number;
     
         /**
          * Get the number of rows in this range.
@@ -779,11 +779,11 @@ declare module TextBuffer {
          */
         intersectsWith(otherRange? : Atom.Range, exclusive? : boolean) : boolean;
     
-        containsRange(otherRange? : Atom.Range, exclusive? : Atom.Range) : Atom.Range;
+        containsRange(otherRange? : Atom.Range, exclusive? : any) : Atom.Range;
     
-        containsPoint(point? : Point, exclusive? : Point) : Point;
+        containsPoint(point? : Point, exclusive? : any) : Point;
     
-        intersectsRow(row? : number) : boolean;
+        intersectsRow(row? : number) : number;
     
         intersectsRowRange(startRow? : number, endRow? : number) : Atom.Range;
     
@@ -948,25 +948,25 @@ declare module TextBuffer {
          * change and all associated marker changes.
          * @param callback - {Function} to be called after markers are updated.
          */
-        onDidUpdateMarkers(callback : (marker: Atom.Marker[]) => void) : Atom.Marker[];
+        onDidUpdateMarkers(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when a marker is created.
          * @param callback - {Function} to be called when a marker is created.
          */
-        onDidCreateMarker(callback : (marker: Atom.Marker) => void) : Atom.Marker;
+        onDidCreateMarker(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when the value of {::getPath} changes.
          * @param callback - {Function} to be called when the path changes.
          */
-        onDidChangePath(callback : Function /* needs to be defined */) : string;
+        onDidChangePath(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback when the value of {::getEncoding} changes.
          * @param callback - {Function} to be called when the encoding changes.
          */
-        onDidChangeEncoding(callback : Function /* needs to be defined */) : string;
+        onDidChangeEncoding(callback : Function /* needs to be defined */) : EventKit.Disposable;
     
         /**
          * Invoke the given callback before the buffer is saved to disk.
@@ -1087,7 +1087,7 @@ declare module TextBuffer {
         /**
          * Get the text of all lines in the buffer, without their line endings.
          */
-        getLines() : number[];
+        getLines() : string[];
     
         /**
          * Get the text of the last line of the buffer, without its line
@@ -1151,7 +1151,7 @@ declare module TextBuffer {
          * @param text? - A {String}
          * @param options? - {Object}
          */
-        setTextInRange(range? : Atom.Range, text? : string, options? : Atom.Range) : Atom.Range;
+        setTextInRange(range? : Atom.Range, text? : string, options? : any) : Atom.Range;
     
         /**
          * Insert text at the given position.
@@ -1240,7 +1240,7 @@ declare module TextBuffer {
          * start at the same position, the larger marker comes first.
          * @param params? - A hash of key-value pairs constraining the set of returned markers. You can query against custom marker properties by listing the desired key-value pairs here. In addition, the following keys are reserved and have special semantics:
          */
-        findMarkers(params? : Atom.Marker[]) : Atom.Marker[];
+        findMarkers(params? : any) : Atom.Marker[];
     
         /**
          * Get the number of markers in the buffer.
@@ -1250,7 +1250,7 @@ declare module TextBuffer {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        destroyMarker(id? : Atom.Marker) : Atom.Marker;
+        destroyMarker(id? : any) : Atom.Marker;
     
         /**
          * Undo the last operation. If a transaction is in progress, aborts it. 
@@ -1331,7 +1331,7 @@ declare module TextBuffer {
          * @param range? - A {Range} in which to search.
          * @param iterator? - A {Function} that's called on each match with an {Object} containing the following keys:
          */
-        scanInRange(regex? : Atom.Range, range? : Atom.Range, iterator? : Atom.Range, reverse? : Atom.Range) : Atom.Range;
+        scanInRange(regex? : RegExp, range? : Atom.Range, iterator? : Function, reverse? : any) : Atom.Range;
     
         /**
          * Scan regular expression matches in a given range in reverse order,
@@ -1340,7 +1340,7 @@ declare module TextBuffer {
          * @param range? - A {Range} in which to search.
          * @param iterator? - A {Function} that's called on each match with an {Object} containing the following keys:
          */
-        backwardsScanInRange(regex? : Atom.Range, range? : Atom.Range, iterator? : Atom.Range) : Atom.Range;
+        backwardsScanInRange(regex? : RegExp, range? : Atom.Range, iterator? : Function) : Atom.Range;
     
         /**
          * Replace all regular expression matches in the entire buffer.
@@ -1357,7 +1357,7 @@ declare module TextBuffer {
          * @param startIndex? - A {Number} representing the starting character offset.
          * @param endIndex? - A {Number} representing the ending character offset.
          */
-        matchesInCharacterRange(regex? : Atom.Range, startIndex? : number, endIndex? : number) : Atom.Range;
+        matchesInCharacterRange(regex? : RegExp, startIndex? : number, endIndex? : number) : Atom.Range;
     
         /**
          * Get the range spanning from `[0, 0]` to {::getEndPosition}.
@@ -1555,7 +1555,7 @@ declare module TextBuffer {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        logLines(start? : any, end? : any) : number[];
+        logLines(start? : any, end? : any) : string[];
     
     }
 

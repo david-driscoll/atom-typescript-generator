@@ -154,7 +154,7 @@ declare module Linter {
         /**
          * Create marker from message 
          */
-        createMarker(message? : Atom.Marker) : Atom.Marker;
+        createMarker(message? : string) : Atom.Marker;
     
         /**
          * Pidgeonhole messages onto lines. Each line gets only one message,
@@ -301,7 +301,7 @@ declare module Linter {
          * 
          * Override this if you don't intend to use base command execution logic 
          */
-        lintFile(filePath? : Pathwatcher.File, callback? : Pathwatcher.File) : Pathwatcher.File;
+        lintFile(filePath? : string, callback? : any) : Pathwatcher.File;
     
         /**
          * process the string result of a linter execution using the regex
@@ -374,7 +374,7 @@ declare module Linter {
          *   colEnd: column to end highlight (optional) 
          * This field or method was marked private by atomdoc. Use with caution.
          */
-        computeRange(match? : Atom.Range) : Atom.Range;
+        computeRange(match? : any) : Atom.Range;
     
     }
 
@@ -408,7 +408,7 @@ declare module Linter {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        initialize(messages? : boolean, editor? : boolean) : boolean;
+        initialize(messages? : string, editor? : boolean) : boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -434,7 +434,7 @@ declare module Linter {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        highlightLines(currentLine? : number) : number[];
+        highlightLines(currentLine? : number) : string[];
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.

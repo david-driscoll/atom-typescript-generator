@@ -1,4 +1,4 @@
-// Type definitions for status-bar (v0.69.0)
+// Type definitions for status-bar (v0.67.0)
 // Project: https://github.com/atom/status-bar
 // Definitions by: david-driscoll <https://github.com/david-driscoll/>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
@@ -225,7 +225,7 @@ declare module StatusBar {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        initialize() : boolean;
+        initialize(state? : boolean) : boolean;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
@@ -235,12 +235,12 @@ declare module StatusBar {
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addLeftTile(options? : Tile) : Tile;
+        addLeftTile(options? : any) : Tile;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.
          */
-        addRightTile(options? : Tile) : Tile;
+        addRightTile(options? : any) : Tile;
     
         /**
          * This field or method was not documented by atomdoc, assume it is private. Use with caution.

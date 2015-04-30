@@ -132,7 +132,7 @@ export default function(provider: BuilderProvider) {
         .forClass("CommandRegistry")
         .forProperty(z => z.name === "add")
         .forName("target")
-        .return("string | JQuery | Node")
+        .return("string | JQuery | Node | SpacePen.View")
 
     provider.paramType()
         .forClass("CommandRegistry")
@@ -159,7 +159,7 @@ export default function(provider: BuilderProvider) {
     provider.paramType()
         .forClass("CommandRegistry")
         .forName("target")
-        .return("Node");
+        .return("string | JQuery | Node | SpacePen.View");
 
     provider.paramType()
         .forClass("CommandRegistry")
@@ -421,12 +421,12 @@ export default function(provider: BuilderProvider) {
         .forName(z => z === "items")
         .return("MenuItem");
 
-    provider.hideClass("OverlayManager");
-    provider.hideClass("PaneContainerView");
-    provider.hideClass("PaneView");
-    provider.hideClass("SelectListView");
-    provider.hideClass("TextEditorView");
-    provider.hideClass("WorkspaceView");
+    //provider.hideClass("OverlayManager");
+    //provider.hideClass("PaneContainerView");
+    //provider.hideClass("PaneView");
+    //provider.hideClass("SelectListView");
+    //provider.hideClass("TextEditorView");
+    //provider.hideClass("WorkspaceView");
 
     provider.paramType()
         .forClass("TooltipManager")
@@ -602,7 +602,7 @@ export default function(provider: BuilderProvider) {
 
     provider.type()
         .order(100)
-        //.forClass("TextEditor")
+    //.forClass("TextEditor")
         .forProperty(x => _.startsWith(x.name, "mark"))
         .return("Marker");
 
@@ -610,4 +610,84 @@ export default function(provider: BuilderProvider) {
         .forClass("Atom")
         .forProperty(z => _.startsWith(z.name, 'deserialize'))
         .return(true);
+
+    provider.paramName()
+        .forClass("NotificationManager")
+        .forProperty(z => _.startsWith(z.name, 'add'))
+        .forName('message')
+        .return('message');
+
+    provider.paramName()
+        .forClass("NotificationManager")
+        .forProperty(z => _.startsWith(z.name, 'add'))
+        .forName('type')
+        .return('type');
+
+    provider.paramType()
+        .forClass("NotificationManager")
+        .forProperty(z => _.startsWith(z.name, 'add'))
+        .forName('options')
+        .return("{ detail?: string; icon?: string; dismissable?: boolean; }");
+
+    provider.type()
+        .forClass("NotificationManager")
+        .forProperty('type')
+        .return("string");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('options')
+        .return("{ detail?: string; icon?: string; dismissable?: boolean; }");
+
+    provider.type()
+        .order(-1000)
+        .forClass("NotificationManager")
+        .forProperty(z => _.startsWith(z.name, 'add'))
+        .return("Notification");
+
+    provider.paramType()
+        .forClass("Notification")
+        .forProperty(z => _.startsWith(z.name, "onDid"))
+        .forName("callback")
+        .return("(notification: Notification) => void");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('getType')
+        .return("string");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('getOptions')
+        .return("{ detail?: string; icon?: string; dismissable?: boolean; }");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('getTimestamp')
+        .return("Date");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('getDetail')
+        .return("string");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('isEqual')
+        .return("Notification");
+
+    provider.type()
+        .forClass("Notification")
+        .forProperty('dismiss')
+        .return("void");
+
+    provider.paramType()
+        .forClass("Notification")
+        .forProperty('setDisplayed')
+        .return("boolean");
+
+    provider.type(false)
+        .forClass(x => _.any(["CommandRegistry","ContextMenuManager","DeserializerManager","MenuManager","TooltipManager"], z => z === x.name))
+        .forProperty("add")
+        .return("EventKit.Disposable");
 };

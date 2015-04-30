@@ -478,8 +478,8 @@ export class BuilderProvider {
         this.inference.hiddenClasses.push(name);
     }
 
-    public type() {
-        return new TypeBuilder(this.inference.types, this.inference.parameterTypes);
+    public type(includeParamType: boolean = true) {
+        return new TypeBuilder(this.inference.types, includeParamType && this.inference.parameterTypes);
     }
 
     public remapType(paramOnly: boolean = false) {

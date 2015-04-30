@@ -2,7 +2,7 @@ export default  {
     content: {
         "atom.Atom": ['emitter: EventKit.Emitter;'],
         "atom.CommandRegistry": [
-            'add(target : string | JQuery | Node, commands: { [commandName: string]: (event: Event) => void })'
+            'add(target : string | JQuery | Node, commands: { [commandName: string]: (event: Event) => void }): EventKit.Disposable'
         ],
         "atom.Config": [
             'observe(keyPath: string, callback: (value: any) => void): EventKit.Disposable',
