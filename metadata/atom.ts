@@ -1,7 +1,6 @@
 export default  {
     content: {
         "atom.Atom": ['emitter: EventKit.Emitter;'],
-        "atom.TextEditor": ['active: boolean;'],
         "atom.CommandRegistry": [
             'add(target : string | JQuery | Node, commands: { [commandName: string]: (event: Event) => void }): EventKit.Disposable'
         ],
