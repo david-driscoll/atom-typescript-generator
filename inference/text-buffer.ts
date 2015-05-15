@@ -47,6 +47,16 @@ export default function(provider: BuilderProvider) {
         return 'TextBuffer.Range[]';
     });
 
+    provider.paramType()
+        .order(1000)
+        .forName(name => name && name.toLowerCase().indexOf("pixelposition") > -1)
+        .return("{ top: number; left: number; }")
+
+    provider.type()
+        .order(1000)
+        .forProperty(property => _.startsWith(property.name, "pixelPosition"))
+        .return("{ top: number; left: number; }")
+
     provider.remapType(true)
         .forType((type) => type === "TextBuffer.Point")
         .compute(function({cls, property, type}) {
