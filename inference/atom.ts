@@ -603,7 +603,7 @@ export default function(provider: BuilderProvider) {
     provider.type()
         .order(100)
     //.forClass("TextEditor")
-        .forProperty(x => _.startsWith(x.name, "mark"))
+        .forPropertyName(x => _.startsWith(x, "mark"))
         .return("Marker");
 
     provider.ignore()
